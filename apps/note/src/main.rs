@@ -10,7 +10,7 @@ pub mod service;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::from_filename("apps/blog/.env").ok();
+    dotenvy::from_filename("apps/note/.env").ok();
     // build our application with a route
     let router = route::init_route().await;
 
@@ -19,7 +19,7 @@ async fn main() {
         panic!("opentelemetry server url not found in env")
     }
     let (sdk_logger_provider, sdk_tracer_provider, sdk_mete_provider) =
-        server_common::opentelemetry::init_opentelemetry(&opentelemetry_server_url,"ai-npc-workflow");
+        server_common::opentelemetry::init_opentelemetry(&opentelemetry_server_url,"blog-note");
     // run it
     let listener = tokio::net::TcpListener::bind("0.0.0.0:11001").await;
     if let Ok(listener) = listener {

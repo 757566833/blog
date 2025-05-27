@@ -97,7 +97,7 @@ async fn proxy_handler(
     // );
     let target_origin: Option<String> = match first_segment {
         "auth" => env::get_auth_origin(),
-        "blog" => env::get_blog_origin(),
+        "note" => env::get_note_origin(),
         _ => None,
     };
     if let Some(target) = target_origin {

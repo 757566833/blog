@@ -2,10 +2,10 @@ use std::env;
 
 
 
-pub fn  get_blog_origin ()-> Option<String> {
-    let blog_origin = std::env::var("BLOG_ORIGIN");
-    if let Ok(blog_origin) = blog_origin {
-        return Some(blog_origin)
+pub fn  get_note_origin ()-> Option<String> {
+    let note_origin = std::env::var("NOTE_ORIGIN");
+    if let Ok(note_origin) = note_origin {
+        return Some(note_origin)
     } else {
         return None
     }
