@@ -1,0 +1,31 @@
+use axum::Extension;
+use opentelemetry::trace::{SpanKind, Tracer};
+use serde::{Deserialize, Serialize};
+use server_common::response::axum_response;
+
+use crate::{
+    middleware::log::get_tracer,  route::{WorkflowAppExtension, WorkflowAppState}, service
+};
+
+#[derive(Deserialize, Serialize)]
+pub struct AiChatRequest {
+    pub content: String,
+    pub chat_id: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct AiAddQuestionRequest {
+    pub query: String,
+}
+pub async fn get(
+    axum::extract::State(_state): axum::extract::State<WorkflowAppState>,
+    Extension(_ext): Extension<WorkflowAppExtension>,
+) -> axum::response::Response {
+    let tracer = get_tracer();
+    let mut _span = tracer
+        .span_builder("get test controller")
+        .with_kind(SpanKind::Internal)
+        .start(tracer);
+    let result = service::test::get(_state.reqwest_client, "".to_string()).await;
+    return axum_response(result);
+}

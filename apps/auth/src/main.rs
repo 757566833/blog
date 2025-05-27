@@ -10,7 +10,7 @@ pub mod service;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::from_filename("apps/blog/.env").ok();
+    dotenvy::from_filename("apps/auth/.env").ok();
     // build our application with a route
     let router = route::init_route().await;
 

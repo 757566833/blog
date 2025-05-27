@@ -1,14 +1,16 @@
 [package]
-name = "gateway"
+name = "auth"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum = {version = "0.8"}
-reqwest = { version = "0.12" ,features = ["stream","json"]}
+axum = { version = "0.8",features = ["macros"] }
+chrono = { version = "0.4" }
 tokio = { version = "1", features = ["full"] }
-tower = {version = "0.5"}
-tower-http = { version = "0.6",features = ["limit"]}
+reqwest = { version = "0.12" ,features = ["stream","json"]}
+serde_json = "1.0"
+pulldown-cmark = {version = "0.13"}
+url = "2.4"
 tracing = "0.1"
 tracing-subscriber = {version="0.3", features = ["env-filter","registry", "std", "fmt"]}
 opentelemetry = { version = "0.29"}
@@ -19,8 +21,8 @@ opentelemetry-http = {version = "0.29"}
 opentelemetry-appender-tracing= {version = "0.29"}
 tracing-opentelemetry = "0.30.0"
 opentelemetry-jaeger-propagator = "0.29.0"
-once_cell = "1.21"
-dotenvy = {"version"  = "0.15"}
+dotenvy = { version = "0.15" }
+serde = { version = "1" , features = ["derive"]}
 server-common = { path = "../../packages/server-common" }
-serde_json = "1.0"
-url = "2.5"
+tower-http = { version = "0.6",features = ["limit"]}
+futures ={version="0.3"}
