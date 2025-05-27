@@ -2,6 +2,7 @@ use env::Environment;
 use tokio::signal;
 
 pub mod controller;
+pub mod db;
 pub mod env;
 pub mod middleware;
 pub mod repository;
