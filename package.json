@@ -6,7 +6,8 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "generate:type": "typeshare ./apps --lang=typescript --output-folder=packages/ui/src/types"
   },
   "devDependencies": {
     "@workspace/eslint-config": "workspace:*",

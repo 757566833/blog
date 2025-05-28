@@ -28,3 +28,9 @@ tower-http = { version = "0.6",features = ["limit"]}
 sqlx = { version = "0.8", features = [ "runtime-tokio","postgres","uuid","chrono" ] }
 bcrypt = "0.17"
 uuid = { version = "1.17", features = ["serde", "v4"] }
+typeshare = "1"
+
+
+[package.metadata.typeshare]
+# 输出路径（你可以改）
+out_dir = "typeshare_out"

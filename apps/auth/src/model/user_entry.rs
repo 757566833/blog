@@ -1,13 +1,18 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
+#[typeshare]
 #[derive(sqlx::FromRow,Deserialize, Serialize)]
 pub struct UserEntry {
+    #[typeshare(serialized_as = "String")]
     pub id: uuid::Uuid,
     pub account: String,
     pub nickname: String,
     pub avatar_url: String,
+    #[typeshare(serialized_as = "String")]
     pub create_time: DateTime<Utc>,
+    #[typeshare(serialized_as = "String")]
     pub update_time: DateTime<Utc>,
 }
 

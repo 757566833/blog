@@ -1,7 +1,7 @@
 use axum::Extension;
 use opentelemetry::trace::{SpanKind, Tracer};
 use serde::{Deserialize, Serialize};
-use server_common::response::axum_response;
+use server_common::{fetch::content_type_json_header, response::axum_response};
 
 use crate::{
     middleware::log::get_tracer,  route::{WorkflowAppExtension, WorkflowAppState}, service
@@ -27,5 +27,5 @@ pub async fn get(
         .with_kind(SpanKind::Internal)
         .start(tracer);
     let result = service::test::get(_state.reqwest_client, "".to_string()).await;
-    return axum_response(result);
+    return axum_response(result,content_type_json_header());
 }

@@ -1,5 +1,6 @@
 import { toast } from "@workspace/ui/components/sonner";
 import { useLoading } from "@workspace/ui/hooks/use-loading";
+import { LoginRequest, UserEntry } from "@workspace/ui/types/auth";
 
 import { useCallback, useMemo, useState } from "react";
 
@@ -202,9 +203,7 @@ export interface IPrompt {
   content: string[];
   create_time: number;
 }
-export const login = async (data?: {
-  account: string, password: string
-}) => {
+export const login = async (data?: LoginRequest) => {
   if (!data) {
     return;
   }
@@ -218,7 +217,7 @@ export const useLogin = () => {
   return useLoading(login)
 }
 export const useUserInfo = () => {
-  return useSWR(
+  return useSWR<UserEntry | undefined>(
     "/api/auth/v1/user/info",
     fetcher,
   );

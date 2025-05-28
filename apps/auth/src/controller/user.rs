@@ -3,6 +3,7 @@ use opentelemetry::trace::{SpanKind, Tracer};
 use serde::{Deserialize, Serialize};
 use server_common::{error::CustomError, fetch::content_type_json_header, response::axum_response};
 use tracing::error;
+use typeshare::typeshare;
 
 use crate::{
     env::Environment,
@@ -11,6 +12,7 @@ use crate::{
     service,
 };
 
+#[typeshare]
 #[derive(Deserialize, Serialize)]
 pub struct LoginRequest {
     pub account: String,
