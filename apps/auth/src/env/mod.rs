@@ -18,4 +18,7 @@ impl Environment {
     pub fn get_postgres_password() -> String {
         env::var("POSTGRES_PASSWORD").unwrap_or("".to_string())
     }
+    pub fn get_cookie_key() -> String {
+        env::var("COOKIE_KEY").unwrap_or("AI_NPC".to_string())
+    }
 }

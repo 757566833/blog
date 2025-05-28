@@ -5,10 +5,15 @@ use crate::error::{CustomError, extract_info_from_custom_error};
 
 pub fn empty_response(
     status_code: axum::http::StatusCode,
+    headers:Option<axum::http::HeaderMap>
 ) -> axum::response::Response<axum::body::Body> {
     let mut response = axum::response::Response::new(axum::body::Body::empty());
     let status = response.status_mut();
     *status = status_code;
+    if let Some(h) = headers {
+        let headers = response.headers_mut();
+        *headers = h;
+    }
     return response;
 }
 
@@ -19,11 +24,11 @@ pub struct AxumResponse<T> {
     pub message: String,
 }
 
-pub fn axum_response<T>(data_result: Result<T, CustomError>) -> axum::response::Response
+pub fn axum_response<T>(data_result: Result<T, CustomError>,headers:axum::http::HeaderMap) -> axum::response::Response
 where
     T: Serialize,
 {
-    let mut response = empty_response(axum::http::StatusCode::OK);
+    let mut response = empty_response(axum::http::StatusCode::OK,Some(headers));
     let body = response.body_mut();
     match data_result {
         Ok(data) => {

@@ -1,10 +1,10 @@
 use axum::Extension;
 use opentelemetry::trace::{SpanKind, Tracer};
 use serde::{Deserialize, Serialize};
-use server_common::response::axum_response;
+use server_common::{fetch::content_type_json_header, response::axum_response};
 
 use crate::{
-    middleware::log::get_tracer,  route::{WorkflowAppExtension, WorkflowAppState}, service
+    middleware::log::get_tracer,  route::{AuthAppExtension, AuthAppState}, service
 };
 
 #[derive(Deserialize, Serialize)]
@@ -18,8 +18,8 @@ pub struct AiAddQuestionRequest {
     pub query: String,
 }
 pub async fn get(
-    axum::extract::State(_state): axum::extract::State<WorkflowAppState>,
-    Extension(_ext): Extension<WorkflowAppExtension>,
+    axum::extract::State(_state): axum::extract::State<AuthAppState>,
+    Extension(_ext): Extension<AuthAppExtension>,
 ) -> axum::response::Response {
     let tracer = get_tracer();
     let mut _span = tracer
@@ -27,5 +27,5 @@ pub async fn get(
         .with_kind(SpanKind::Internal)
         .start(tracer);
     let result = service::test::get(_state.reqwest_client, "".to_string()).await;
-    return axum_response(result);
+    return axum_response(result,content_type_json_header());
 }

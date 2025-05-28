@@ -1,4 +1,4 @@
-use crate::dto::{add_user_dto::AddUserDto, edit_user_dto::EditUserDto};
+use crate::{dto::{add_user_dto::AddUserDto, edit_user_dto::EditUserDto}, model::user_entry::UserEntry};
 use server_common::error::{CustomError, log_error};
 use sqlx::{Executor, Postgres, postgres::PgPool};
 
@@ -9,12 +9,12 @@ where
 {
     let result = sqlx::query(
         r#"
-        INSERT INTO users (account_id, nickname, avatar_url)
-        VALUES (?, ?, ?)
+        INSERT INTO users (account, nickname, avatar_url)
+        VALUES ($1, $2, $3)
         RETURNING id
         "#,
     )
-    .bind(&user.account_id)
+    .bind(&user.account)
     .bind(&user.nickname)
     .bind(&user.avatar_url)
     .execute(executor)
@@ -37,8 +37,8 @@ where
     let result = sqlx::query(
         r#"
         UPDATE users
-        SET nickname = ?, avatar_url = ?
-        WHERE account_id = ?
+        SET nickname = $1, avatar_url = $2
+        WHERE account_id = $3
         "#,
     )
     .bind(&user.nickname)
@@ -56,26 +56,26 @@ where
     return Ok(result.rows_affected());
 }
 
-// get user count by account_id
-pub async fn get_user_count_by_account_id(
+// get user by account
+pub async fn get_user_by_account(
     pool: &PgPool,
-    account_id: &str,
-) -> Result<i64, CustomError> {
-    let result = sqlx::query_scalar::<_, i64>(
+    account: &str,
+) -> Result<Option<UserEntry>, CustomError> {
+    let result = sqlx::query_as::<_, UserEntry>(
         r#"
-        SELECT COUNT(*)
+        SELECT *
         FROM users
-        WHERE account_id = ?
+        WHERE account = $1
         "#,
     )
-    .bind(account_id)
-    .fetch_one(pool)
+    .bind(account)
+    .fetch_optional(pool)
     .await
     .map_err(|error| {
         log_error(CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
-            "get user count by account_id error"
+            "get user by account error"
         )))
     })?;
     return Ok(result);

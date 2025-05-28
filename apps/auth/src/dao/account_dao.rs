@@ -17,7 +17,7 @@ where
     let result = sqlx::query(
         r#"
         INSERT INTO accounts (account, password_hash)
-        VALUES (?, ?)
+        VALUES ($1, $2)
         RETURNING id, account, create_time
         "#,
     )
@@ -44,8 +44,8 @@ where
     let result = sqlx::query(
         r#"
         UPDATE accounts
-        SET password_hash = ?
-        WHERE id = ?
+        SET password_hash = $1
+        WHERE id = $2
         "#,
     )
     .bind(&account.password_hash)
@@ -70,7 +70,7 @@ pub async fn get_account(
     let result = sqlx::query_as::<_, AccountEntry>(
         r#"
         SELECT id FROM accounts
-        WHERE account = ? AND password_hash = ?
+        WHERE account = $1 AND password_hash = $2
         "#,
     )
     .bind(&account.account)
@@ -87,7 +87,7 @@ pub async fn get_account(
 
     let id;
     if let Some(entry) = result {
-        id = entry.id;
+        id = entry.id.to_string();
     } else {
         id = String::new();
     }
@@ -103,7 +103,7 @@ pub async fn get_account_count(
     let result = sqlx::query_scalar::<_, i64>(
         r#"
         SELECT COUNT(*) FROM accounts
-        WHERE account = ?
+        WHERE account = $1
         "#,
     )
     .bind(account)
@@ -114,6 +114,31 @@ pub async fn get_account_count(
             "postgres error: {},{}",
             error.to_string(),
             "get account count error"
+        )))
+    })?;
+
+    return Ok(result);
+}
+
+// get account by account
+pub async fn get_account_by_account(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    account: &str,
+) -> Result<Option<AccountEntry>, CustomError> {
+    let result = sqlx::query_as::<_, AccountEntry>(
+        r#"
+        SELECT * FROM accounts
+        WHERE account = $1
+        "#,
+    )
+    .bind(account)
+    .fetch_optional(pool)
+    .await
+    .map_err(|error| {
+        log_error(CustomError::Postgres(format!(
+            "postgres error: {},{}",
+            error.to_string(),
+            "get account by account error"
         )))
     })?;
 

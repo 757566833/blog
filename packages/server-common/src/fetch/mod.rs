@@ -24,7 +24,7 @@ pub fn reqwest_response_to_axum_response(
         *status_ref = reqwest_response.status();
         response = response_origin;
     } else {
-        response = empty_response(reqwest_response.status());
+        response = empty_response(reqwest_response.status(),None);
     }
     let headers = reqwest_response.headers();
     let headers_ref = response.headers_mut();

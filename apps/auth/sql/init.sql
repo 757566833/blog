@@ -21,7 +21,7 @@ CREATE TABLE accounts (
 -- 用户表（假外键：仅存储 account_id，不加约束）
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    account_id UUID NOT NULL UNIQUE,  -- 无 REFERENCES，表示假外键
+    account VARCHAR(100) NOT NULL UNIQUE,
     nickname VARCHAR(100),
     avatar_url TEXT,
     create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
