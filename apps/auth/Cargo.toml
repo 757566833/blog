@@ -25,4 +25,5 @@ dotenvy = { version = "0.15" }
 serde = { version = "1" , features = ["derive"]}
 server-common = { path = "../../packages/server-common" }
 tower-http = { version = "0.6",features = ["limit"]}
-futures ={version="0.3"}
+sqlx = { version = "0.8", features = [ "runtime-tokio","postgres" ] }
+bcrypt = "0.17"

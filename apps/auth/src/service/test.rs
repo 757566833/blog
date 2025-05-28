@@ -5,7 +5,7 @@ use server_common::{
 
 use crate::{
     middleware::log::get_tracer,
-    repository,
+    dao,
 };
 pub async fn get(reqwest_client: reqwest::Client, query: String) -> Result<String, CustomError> {
     let tracer = get_tracer();
@@ -15,7 +15,7 @@ pub async fn get(reqwest_client: reqwest::Client, query: String) -> Result<Strin
         .start(tracer);
 
     span.add_event("get time", vec![]);
-    let result = repository::test::get(reqwest_client, query).await;
+    let result = dao::test::get(reqwest_client, query).await;
     span.add_event("get time end", vec![]);
     return result;
 }

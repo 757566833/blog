@@ -3,16 +3,17 @@ use tokio::signal;
 
 pub mod controller;
 pub mod db;
+pub mod dto;
 pub mod env;
 pub mod middleware;
-pub mod repository;
+pub mod model;
+pub mod dao;
 pub mod route;
 pub mod service;
 
 #[tokio::main]
 async fn main() {
     dotenvy::from_filename("apps/auth/.env").ok();
-    // build our application with a route
     let router = route::init_route().await;
 
     let opentelemetry_server_url = Environment::get_opentelemetry_server_url();

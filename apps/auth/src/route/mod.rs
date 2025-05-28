@@ -1,5 +1,6 @@
 use crate::{
     controller,
+    db::init_db,
     middleware::{extension::with_extension, log::with_log_tracer},
 };
 use axum::{Extension, Router, middleware, routing::get};
@@ -7,7 +8,7 @@ use axum::{Extension, Router, middleware, routing::get};
 #[derive(Clone)]
 pub struct WorkflowAppState {
     pub reqwest_client: reqwest::Client,
-    // pub elasticsearch_client:Elasticsearch
+    pub db_pool: sqlx::Pool<sqlx::Postgres>,
 }
 
 #[derive(Clone)]
@@ -17,7 +18,8 @@ pub struct WorkflowAppExtension {
 
 pub async fn init_route() -> Router {
     let reqwest_client = reqwest::Client::new();
-    let state = WorkflowAppState { reqwest_client };
+    let db_pool = init_db().await;
+    let state = WorkflowAppState { reqwest_client ,db_pool};
 
     let app: Router = Router::new()
         .route("/api/test", get(controller::test::get))
