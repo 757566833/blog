@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 pub const UTF_8_JSON: &str = "application/json";
 pub const TEXT_PLAIN: &str = "text/plain; charset=UTF-8";
@@ -179,4 +180,12 @@ pub struct ESBatchByIdsDelResponse {
 pub struct ESCountResponse {
     pub count: u64,
     pub _shards: ESShards,
+}
+
+
+#[typeshare]
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct DBPageResponse<T> {
+    pub items: Vec<T>,
+    pub total: u32,
 }

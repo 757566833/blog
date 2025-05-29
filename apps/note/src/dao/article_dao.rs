@@ -4,7 +4,7 @@ use serde_json::json;
 use server_common::{constant::{ESAnalyzeSearchResult, ESDetail, ESHitsAnalyze, ESInsertOrUpdateResponse}, error::CustomError, fetch::json_request_wrapper};
 
 use crate::{
-    dto::add_article::AddArticleDTO, env::Environment, middleware::log::get_tracer, model::article_model::{ESAnalyzeArticleHighlight, ESArticleEntry}
+    dto::add_article_dto::AddArticleDTO, env::Environment, middleware::log::get_tracer, model::article_model::{ESAnalyzeArticleHighlight, ESArticleEntry}
 };
 
 pub async fn page(

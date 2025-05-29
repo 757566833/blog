@@ -3,7 +3,7 @@ use server_common::{constant::{ESDetail, ESHitsAnalyze}, error::CustomError};
 
 use crate::{
     dao,
-    dto::add_article::AddArticleDTO,
+    dto::add_article_dto::AddArticleDTO,
     middleware::log::get_tracer,
     model::article_model::{ESAnalyzeArticleHighlight, ESArticleEntry},
 };

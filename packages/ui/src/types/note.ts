@@ -9,7 +9,6 @@ export interface AddArticleRequest {
 }
 
 export interface AddArticleScoreRequest {
-	title: string;
 	article_id: string;
 	score: number;
 	comment: string;

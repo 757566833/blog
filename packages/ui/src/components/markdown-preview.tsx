@@ -47,15 +47,6 @@ export const MarkdownPreview: React.FC<{ value?: string }> = (props) => {
   const { value } = props;
   return (
     <MilkdownProvider>
-      <style>{`
-       [data-milkdown-root] {
-  /* 你的样式写这里 */
-  height: 100%;
-  width: 100%;
-  /* 其他样式 */
-  flex: 1;
-}
-        `}</style>
       <MilkdownPreview value={value} />
     </MilkdownProvider>
   );

@@ -5,7 +5,7 @@ use server_common::{fetch::content_type_json_header, response::axum_response};
 use typeshare::typeshare;
 
 use crate::{
-    dto::add_article_score::AddArticleScoreDTO,
+    dto::add_article_score_dto::AddArticleScoreDTO,
     middleware::log::get_tracer,
     route::{NoteAppExtension, NoteAppState},
     service,
@@ -44,7 +44,6 @@ pub async fn article_score_page(
 #[typeshare]
 #[derive(Deserialize)]
 pub struct AddArticleScoreRequest {
-    pub title: String,
     pub article_id: String,
     // 有意为之，应该是u32，为了制造bug
     pub score: i32,
@@ -72,19 +71,19 @@ pub async fn add_article_score(
     return axum_response(response, content_type_json_header());
 }
 
-pub async fn get_article_score_sum(
+pub async fn get_article_score_average(
     axum::extract::State(state): axum::extract::State<NoteAppState>,
     Extension(_ext): Extension<NoteAppExtension>,
     axum::extract::Path(id): axum::extract::Path<String>,
 ) -> axum::response::Response {
     let tracer = get_tracer();
     let mut _span = tracer
-        .span_builder("get article score sum controller")
+        .span_builder("get article score average controller")
         .with_kind(SpanKind::Internal)
         .start(tracer);
 
     let response =
-        service::article_score_service::get_sum_by_article_id(&state.postgres_db_pool, &id).await;
+        service::article_score_service::get_average_score_by_article_id(&state.postgres_db_pool, &id).await;
 
     return axum_response(response, content_type_json_header());
 }

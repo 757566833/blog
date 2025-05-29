@@ -4,7 +4,7 @@ use server_common::
 use sqlx::{Executor, Postgres};
 
 use crate::{
-    dto::add_article_score::AddArticleScoreDTO, model::article_score_entry::ArticleScoreEntry,
+    dto::add_article_score_dto::AddArticleScoreDTO, model::article_score_entry::ArticleScoreEntry,
 };
 
 pub async fn add_article_score<'e, E>(
@@ -18,7 +18,6 @@ where
         r#"
         INSERT INTO article_score (account, article_id, score, comment)
         VALUES ($1, $2, $3, $4)
-        RETURNING id, account, article_id, score, comment, created_at, updated_at
         "#,
     )
     .bind(&article_score.account)
@@ -48,7 +47,7 @@ where
 {
     let result = sqlx::query_as::<_, ArticleScoreEntry>(
         r#"
-        SELECT id, account, article_id, score, comment, created_at, updated_at
+        SELECT *
         FROM article_score
         WHERE account = $1 AND article_id = $2
         "#,
@@ -71,7 +70,7 @@ where
 //  page article scores
 pub async fn page<'e, E>(
     executor: E,
-    account: &str,
+    article_id: &str,
     from: u32,
     size: u32,
 ) -> Result<Vec<ArticleScoreEntry>, CustomError>
@@ -82,12 +81,12 @@ where
         r#"
         SELECT *
         FROM article_score
-        WHERE account = $1
+        WHERE article_id = $1
         ORDER BY create_time DESC
         OFFSET $2 LIMIT $3
         "#,
     )
-    .bind(account)
+    .bind(article_id)
     .bind(from as i64)
     .bind(size as i64)
     .fetch_all(executor)
@@ -103,17 +102,46 @@ where
     Ok(result)
 }
 
-// get sum  score by article_id
-pub async fn get_sum_score_by_article_id<'e, E>(
+// get count of article scores by account
+pub async fn get_count_by_account<'e, E>(
     executor: E,
     article_id: &str,
-) -> Result<i32, CustomError>
+) -> Result<i64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {
-    let result = sqlx::query_scalar::<_, i32>(
+    let result = sqlx::query_scalar::<_, i64>(
         r#"
-        SELECT SUM(score)
+        SELECT COUNT(*)
+        FROM article_score
+        WHERE article_id = $1
+        "#,
+    )
+    .bind(article_id)
+    .fetch_one(executor)
+    .await
+    .map_err(|error| {
+        log_error(CustomError::Postgres(format!(
+            "postgres error: {},{}",
+            error.to_string(),
+            "get count by article_id error"
+        )))
+    })?;
+
+    Ok(result)
+}
+
+// get average score by article_id
+pub async fn get_average_score_by_article_id<'e, E>(
+    executor: E,
+    article_id: &str,
+) -> Result<f64, CustomError>
+where
+    E: Executor<'e, Database = Postgres>,
+{
+    let result = sqlx::query_scalar::<_, Option<f64>>(
+        r#"
+        SELECT AVG(score)::FLOAT8
         FROM article_score
         WHERE article_id = $1
         "#,
@@ -129,5 +157,5 @@ where
         )))
     })?;
 
-    Ok(result)
+    Ok(result.unwrap_or(0.0))
 }

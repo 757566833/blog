@@ -167,8 +167,8 @@ static WHITELIST: [&'static str; 5] = [
     "/auth/v1/user/login",
     "/auth/v1/user/logout",
     "/auth/v1/user/info",
-    "/note/v1/page",
-    "/note/v1/*",
+    "/note/v1/article/page",
+    "/note/v1/article/*",
 ];
 
 fn is_whitelisted(path: &str) -> bool {

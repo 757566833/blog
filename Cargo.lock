@@ -2119,6 +2119,7 @@ dependencies = [
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
+ "typeshare",
 ]
 
 [[package]]

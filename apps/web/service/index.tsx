@@ -2,9 +2,10 @@ import { toast } from "@workspace/ui/components/sonner";
 import { useLoading } from "@workspace/ui/hooks/use-loading";
 import { LoginRequest, UserEntry } from "@workspace/ui/types/auth";
 import { useCallback, useMemo, useState } from "react";
-import { ESArticleEntry, ESAnalyzeArticleHighlight, AddArticleRequest } from "@workspace/ui/types/note";
+import { ESArticleEntry, ESAnalyzeArticleHighlight, AddArticleRequest, ArticleScoreEntry, AddArticleScoreRequest } from "@workspace/ui/types/note";
 
 import useSWR from "swr";
+import { DBPageResponse } from "@workspace/ui/types/server_common";
 export interface Response<T> {
   code: number;
   data: T;
@@ -255,3 +256,56 @@ export const useArticle = (id?: string | null) => {
     IEsDetailResponse<ESArticleEntry> | undefined
   >(url, fetchArticle);
 };
+
+export const fetchArticleScoreAverage = async (url?: string) => {
+  if (url) {
+    const response: number = await fetcher(url);
+    return response;
+  }
+}
+
+export const useArticleScoreAverage = (id?: string | null) => {
+  const url = useMemo(() => {
+    if (id) {
+      return `/api/note/v1/article/score/average/${id}`;
+    }
+  }, [id]);
+  return useSWR<number | undefined>(url, fetchArticleScoreAverage);
+}
+
+
+export const fetchArticleScorePage = async (url?: string) => {
+  if (url) {
+    const response: DBPageResponse<ArticleScoreEntry> = await fetcher(url);
+    return response;
+  }
+};
+export const useArticleScorePage = (params: URLSearchParams) => {
+  const url = useMemo(() => {
+    const paramsStr = params.toString();
+    if (paramsStr) {
+      return `/api/note/v1/article/score/page?${params.toString()}`;
+    }
+  }, [params]);
+  return useSWR<
+    DBPageResponse<ArticleScoreEntry> | undefined
+  >(url, fetchArticleScorePage, {
+    revalidateOnFocus: false,
+  });
+};
+
+
+
+export const addArticleScore = async (data?: AddArticleScoreRequest) => {
+  if (!data) {
+    return;
+  }
+  const res: { account: string } = await fetcher("/api/note/v1/article/score", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return res;
+}
+export const useAddArticleScore = () => {
+  return useLoading(addArticleScore)
+}

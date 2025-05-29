@@ -34,8 +34,8 @@ CREATE TABLE article_score (
   article_id VARCHAR(100) NOT NULL,
   score INT,
   comment TEXT,  -- 可选：用户评分时的评论内容
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  update_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
   UNIQUE (account, article_id)  -- 保证每个用户只能对一篇文章评分一次
 );

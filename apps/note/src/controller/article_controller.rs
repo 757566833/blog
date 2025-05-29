@@ -5,7 +5,7 @@ use server_common::{fetch::content_type_json_header, response::axum_response};
 use typeshare::typeshare;
 
 use crate::{
-    dto::add_article::AddArticleDTO,
+    dto::add_article_dto::AddArticleDTO,
     middleware::log::get_tracer,
     route::{NoteAppExtension, NoteAppState},
     service,

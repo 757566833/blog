@@ -43,8 +43,8 @@ pub async fn init_route() -> Router {
             get(controller::article_controller::get_article),
         )
         .route(
-            "/v1/article/score/sum/{id}",
-            get(controller::article_score_controller::get_article_score_sum),
+            "/v1/article/score/average/{id}",
+            get(controller::article_score_controller::get_article_score_average),
         )
         .route(
             "/v1/article/score",
