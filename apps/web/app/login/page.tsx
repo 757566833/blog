@@ -2,10 +2,8 @@
 import { useLogin } from "@/service"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@workspace/ui/components/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@workspace/ui/components/form"
 import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
 import { GalleryVerticalEnd } from "lucide-react"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
@@ -34,15 +32,13 @@ export default function Page() {
   })
   const [login, loginLoading] = useLogin();
   const onSubmit = useCallback(async (data: z.infer<typeof formSchema>) => {
-    console.log("Form submitted:", data)
-    // 在这里处理登录逻辑
     const response = await login(data);
-    if(response){
-;
+    if (response) {
+      ;
       // 例如，重定向到主页或显示成功消息
       window.location.href = "/";
     }
-  }, [])
+  }, [login])
   return (
     <div className="flex items-center justify-center min-h-svh">
       <Form {...form}>

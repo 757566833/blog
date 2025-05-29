@@ -1,4 +1,5 @@
 "use client"
+import { Header } from "@/components/header";
 import { UserCenter } from "@/components/user-center";
 import { useNotePage, usePage, useUserInfo } from "@/service";
 import { Button } from "@workspace/ui/components/button"
@@ -20,14 +21,7 @@ export default function Page() {
 
   return (
     <div className="flex flex-col min-h-svh">
-      <div className="h-14 border-b flex justify-between items-center px-4">
-        <div className="text-lg font-bold">
-          博客论坛
-        </div>
-        <div>
-          <UserCenter />
-        </div>
-      </div>
+      <Header />
       <div className="flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold">Hello World</h1>
         <Button size="sm">Button</Button>

@@ -53,6 +53,37 @@ pub async fn login(
     return axum_response(wrapper, headers);
 }
 
+pub async fn logout(
+    axum::extract::State(state): axum::extract::State<AuthAppState>,
+    Extension(_ext): Extension<AuthAppExtension>,
+) -> axum::response::Response {
+    let tracer = get_tracer();
+    let mut _span = tracer
+        .span_builder("user logout controller")
+        .with_kind(SpanKind::Internal)
+        .start(tracer);
+    let _ = service::user_service::logout(&state.db_pool).await;
+    let token = "".to_string();
+    let token_value_result = axum::http::HeaderValue::from_str(&format!(
+        "{}=\"\"; sameSite=strict; path=/; httpOnly=true; max-age=1",
+        Environment::get_cookie_key()
+    ));
+    let token_value;
+    match token_value_result {
+        Ok(t) => {
+            token_value = t;
+        }
+        Err(e) => {
+            error!("string token to header value error : {:?}", e);
+            token_value = axum::http::HeaderValue::from_static("");
+        }
+    }
+    let mut headers = content_type_json_header();
+    headers.insert(axum::http::header::SET_COOKIE, token_value);
+    let wrapper: Result<String, CustomError> = Ok(token);
+    return axum_response(wrapper, headers);
+}
+
 pub async fn info(
     axum::extract::State(state): axum::extract::State<AuthAppState>,
     Extension(ext): Extension<AuthAppExtension>,

@@ -184,6 +184,16 @@ export const login = async (data?: LoginRequest) => {
 export const useLogin = () => {
   return useLoading(login)
 }
+
+export const logout = async () => {
+  await fetcher("/api/auth/v1/user/logout", {
+    method: "POST",
+  });
+  globalThis?.location?.reload();
+}
+export const useLogout = () => {
+  return useLoading(logout)
+}
 export const useUserInfo = () => {
   return useSWR<UserEntry | undefined>(
     "/api/auth/v1/user/info",

@@ -1,6 +1,7 @@
 // 生成一个注册的方法
 
 use bcrypt::DEFAULT_COST;
+use chrono::Utc;
 use opentelemetry::trace::{SpanKind, Tracer};
 use server_common::{
     error::{CustomError, log_error},
@@ -106,4 +107,17 @@ pub async fn info(
 
     let user: Option<UserEntry> = user_dao::get_user_by_account(pool, &account).await?;
     return Ok(user);
+}
+
+pub async fn logout(
+    _pool: &sqlx::Pool<sqlx::Postgres>,
+) -> Result<i64, CustomError> {
+    let tracer = get_tracer();
+    let mut _span = tracer
+        .span_builder("user logout service")
+        .with_kind(SpanKind::Internal)
+        .start(tracer);
+
+    let current_timestamp_millis = Utc::now().timestamp_millis();
+    return Ok(current_timestamp_millis);
 }

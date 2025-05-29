@@ -180,58 +180,17 @@ async fn add_gateway_header(
     let query = uri.query().unwrap_or("");
     let method = req.method();
     let req_header = req.headers();
-    let uuid = Uuid::new_v4();
 
-    let tracer_name = format!("blog-gateway-{}", uuid);
+    let default_uid = HeaderValue::from_static("");
 
-    println!(
-        "gateway add trace id to header, uuid: {}, method: {}, path: {}, query: {}",
-        uuid, method, path, query
-    );
-    if WHITELIST.contains(&path) {
-        let tracer = global::tracer(tracer_name);
-        let span = tracer
-            .span_builder(String::from(format!("blog-gateway-proxy-{}", uuid)))
-            .with_kind(SpanKind::Server)
-            .with_attributes(vec![
-                KeyValue::new("uuid", uuid.to_string()),
-                KeyValue::new("http.method", method.to_string()),
-                KeyValue::new("http.path", path.to_string()),
-                KeyValue::new("http.query", query.to_string()),
-                KeyValue::new(
-                    "http.request.headers",
-                    format!("{:?}", req_header.to_owned()),
-                ),
-                // KeyValue::new("http.response.headers", format!("{:?}", req.headers())),
-            ])
-            .start(&tracer);
-        let cx = opentelemetry::Context::current_with_span(span);
-
-        global::get_text_map_propagator(|propagator| {
-            propagator.inject_context(&cx, &mut HeaderInjector(req.headers_mut()))
-        });
-        cx.span().add_event(
-            "gateway add trace id to header",
-            // vec![KeyValue::new("status")],
-            vec![],
-        );
-        let res = next.run(req).await;
-
-        Ok(res)
-        //     return Ok(next.run(req).await);
-    } else {
-        let default_uid = HeaderValue::from_static("");
-
-        let authorization = req
-            .headers()
-            .get(axum::http::header::COOKIE)
-            .unwrap_or(&default_uid)
-            .to_str()
-            .unwrap_or("");
-
-        if authorization.is_empty() {
-            return Err(axum::http::StatusCode::UNAUTHORIZED);
-        }
+    let authorization = req
+        .headers()
+        .get(axum::http::header::COOKIE)
+        .unwrap_or(&default_uid)
+        .to_str()
+        .unwrap_or("");
+    let mut token_payload_option = None;
+    if !authorization.is_empty() {
         let cookies = authorization.split(";");
         let mut bearer_token = "".to_string();
         for cookie in cookies {
@@ -242,23 +201,17 @@ async fn add_gateway_header(
                 }
             }
         }
-        if bearer_token.is_empty() {
-            return Err(axum::http::StatusCode::UNAUTHORIZED);
+        if !bearer_token.is_empty() {
+            let token = bearer_token.trim_start_matches("Bearer ");
+            let token_payload_result = server_common::jwt::token::parse_token(token.to_string());
+            if let Ok(t) = token_payload_result {
+                token_payload_option = Some(t);
+            }
         }
+    }
 
-        let token = bearer_token.trim_start_matches("Bearer ");
-        let token_payload_result = server_common::jwt::token::parse_token(token.to_string());
-        let token_payload;
-        match token_payload_result {
-            Ok(t) => {
-                token_payload = t;
-            }
-            Err(e) => {
-                error!("parse token error: {:?}", e);
-                return Err(axum::http::StatusCode::UNAUTHORIZED);
-            }
-        }
-        let account = &token_payload.account.clone();
+    if let Some(token_payload) = token_payload_option {
+        let account = token_payload.account;
         let tracer = global::tracer(format!("blog-gateway-account-{}", account));
         let span = tracer
             .span_builder(String::from(format!(
@@ -308,6 +261,43 @@ async fn add_gateway_header(
             "gateway got response",
             vec![KeyValue::new("status", res.status().to_string())],
         );
-        Ok(res)
+        return Ok(res);
+    } else {
+        if WHITELIST.contains(&path) {
+            let uuid = Uuid::new_v4();
+            let tracer_name = format!("blog-gateway-{}", uuid);
+            let tracer = global::tracer(tracer_name);
+            let span = tracer
+                .span_builder(String::from(format!("blog-gateway-proxy-{}", uuid)))
+                .with_kind(SpanKind::Server)
+                .with_attributes(vec![
+                    KeyValue::new("uuid", uuid.to_string()),
+                    KeyValue::new("http.method", method.to_string()),
+                    KeyValue::new("http.path", path.to_string()),
+                    KeyValue::new("http.query", query.to_string()),
+                    KeyValue::new(
+                        "http.request.headers",
+                        format!("{:?}", req_header.to_owned()),
+                    ),
+                    // KeyValue::new("http.response.headers", format!("{:?}", req.headers())),
+                ])
+                .start(&tracer);
+            let cx = opentelemetry::Context::current_with_span(span);
+
+            global::get_text_map_propagator(|propagator| {
+                propagator.inject_context(&cx, &mut HeaderInjector(req.headers_mut()))
+            });
+            cx.span().add_event(
+                "gateway add trace id to header",
+                // vec![KeyValue::new("status")],
+                vec![],
+            );
+
+            let res = next.run(req).await;
+
+            Ok(res)
+        } else {
+            return Err(axum::http::StatusCode::UNAUTHORIZED);
+        }
     }
 }

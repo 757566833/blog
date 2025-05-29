@@ -24,6 +24,7 @@ pub async fn init_route() -> Router {
     let app: Router = Router::new()
         .route("/api/test", get(controller::test::get))
         .route("/v1/user/login", post(controller::user_controller::login))
+        .route("/v1/user/logout", post(controller::user_controller::logout))
         .route("/v1/user/info", get(controller::user_controller::info))
         .layer(middleware::from_fn(with_log_tracer))
         .layer(middleware::from_fn(with_extension))

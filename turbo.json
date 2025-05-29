@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["API","NEXT_RUNTIME"],
   "ui": "tui",
   "tasks": {
     "build": {
