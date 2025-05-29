@@ -4,14 +4,14 @@ import { useNotePage } from "@/service";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@workspace/ui/components/pagination";
 import { datetimeRender } from "@workspace/ui/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const MAX_PAGE_BUTTONS = 5;
-export default function Page() {
+function Base() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const page = useMemo(()=>parseInt(searchParams.get("page") || "1", 10),[searchParams]);
-  const pageSize = useMemo(()=>parseInt(searchParams.get("page_size") || "10", 10),[searchParams]);
+  const page = useMemo(() => parseInt(searchParams.get("page") || "1", 10), [searchParams]);
+  const pageSize = useMemo(() => parseInt(searchParams.get("page_size") || "10", 10), [searchParams]);
   const [query, setQuery] = useState(new URLSearchParams());
   useEffect(() => {
     const nextSearch = new URLSearchParams();
@@ -25,7 +25,7 @@ export default function Page() {
   const { data: notes } = useNotePage(query);
   const totalRef = useRef(0);
   const total = useMemo(() => {
-    const t =  notes?.hits?.length || totalRef.current;
+    const t = notes?.hits?.length || totalRef.current;
     totalRef.current = t;
     return t
   }, [notes?.hits?.length])
@@ -53,8 +53,8 @@ export default function Page() {
     return result;
   }, [page, pageSize, total]);
   const handleOpen = useCallback((id: string) => {
-      globalThis?.window.open(`/note?id=${id}`);
-    }, [])
+    globalThis?.window.open(`/note?id=${id}`);
+  }, [])
   return (
     <div className="flex flex-col h-screen">
       <Header />
@@ -84,4 +84,10 @@ export default function Page() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <Suspense>
+    <Base />
+  </Suspense>
 }

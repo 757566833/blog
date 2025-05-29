@@ -4,9 +4,9 @@ import { useNotePage } from "@/service";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@workspace/ui/components/pagination";
 import { datetimeRender, safeDomString } from "@workspace/ui/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 const MAX_PAGE_BUTTONS = 5;
-export default function Page() {
+function Base() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = useMemo(() => parseInt(searchParams.get("page") || "1", 10), [searchParams]);
@@ -93,4 +93,10 @@ export default function Page() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+    return <Suspense>
+        <Base />
+    </Suspense>
 }

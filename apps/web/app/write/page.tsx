@@ -7,7 +7,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@workspace/ui/components/input";
 import { MarkdownEditor } from "@workspace/ui/components/markdown-editor";
 import { toast } from "@workspace/ui/components/sonner";
-import React, { useCallback } from "react";
+import React, { Suspense, useCallback } from "react";
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -21,7 +21,7 @@ const formSchema = z.object({
     message: "最少1个字符",
   }),
 })
-export default function Page() {
+function Base() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -90,4 +90,10 @@ export default function Page() {
       </div>
     </div >
   )
+}
+
+export default function Page() {
+    return <Suspense>
+        <Base />
+    </Suspense>
 }
