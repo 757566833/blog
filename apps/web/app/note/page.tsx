@@ -1,5 +1,5 @@
 "use client"
-import { useNote } from "@/service";
+import { useArticle } from "@/service";
 import { MarkdownPreview } from "@workspace/ui/components/markdown-preview";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
@@ -7,7 +7,7 @@ import { Suspense, useMemo } from "react";
 function Base() {
     const searchParams = useSearchParams();
     const id = useMemo(() => searchParams.get("id"), [searchParams]);
-    const { data } = useNote(id)
+    const { data } = useArticle(id)
 
 
     return (

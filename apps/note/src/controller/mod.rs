@@ -1,2 +1,3 @@
+pub mod article_controller;
+pub mod article_score_controller;
 pub mod test;
-pub mod note_controller;

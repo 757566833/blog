@@ -3,27 +3,50 @@
 */
 
 
-export interface AddNoteRequest {
+export interface AddArticleRequest {
 	title: string;
 	content: string;
 }
 
-export interface ESAnalyzeNoteHighlight {
+export interface AddArticleScoreRequest {
+	title: string;
+	article_id: string;
+	score: number;
+	comment: string;
+}
+
+export interface ArticlePageRequest {
+	page?: number;
+	page_size?: number;
+	analyze?: string;
+}
+
+export interface ArticleScoreEntry {
+	id: string;
+	account: string;
+	article_id: string;
+	score: number;
+	comment: string;
+	create_time: string;
+	update_time: string;
+}
+
+export interface ArticleScorePageRequest {
+	page?: number;
+	page_size?: number;
+	article_id: string;
+}
+
+export interface ESAnalyzeArticleHighlight {
 	title?: string[];
 	content?: string[];
 }
 
-export interface ESNoteEntry {
+export interface ESArticleEntry {
 	account: string;
 	title: string;
 	content: string;
 	create_time: number;
 	update_time: number;
-}
-
-export interface NotePageRequest {
-	page?: number;
-	page_size?: number;
-	analyze?: string;
 }
 

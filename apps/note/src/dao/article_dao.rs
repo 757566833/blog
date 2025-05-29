@@ -4,7 +4,7 @@ use serde_json::json;
 use server_common::{constant::{ESAnalyzeSearchResult, ESDetail, ESHitsAnalyze, ESInsertOrUpdateResponse}, error::CustomError, fetch::json_request_wrapper};
 
 use crate::{
-    dto::add_note::AddNoteDTO, env::Environment, middleware::log::get_tracer, model::note_model::{ESAnalyzeNoteHighlight, ESNoteEntry}
+    dto::add_article::AddArticleDTO, env::Environment, middleware::log::get_tracer, model::article_model::{ESAnalyzeArticleHighlight, ESArticleEntry}
 };
 
 pub async fn page(
@@ -13,10 +13,10 @@ pub async fn page(
     from: u32,
     size: u32,
     analyze: Option<String>,
-) -> Result<ESHitsAnalyze<ESNoteEntry, ESAnalyzeNoteHighlight>, CustomError> {
+) -> Result<ESHitsAnalyze<ESArticleEntry, ESAnalyzeArticleHighlight>, CustomError> {
     let tracer = get_tracer();
     let mut span = tracer
-        .span_builder(" note page repository")
+        .span_builder(" article page repository")
         .with_kind(SpanKind::Internal)
         .start(tracer);
     let create_time_sort = sort.unwrap_or("desc");
@@ -74,35 +74,35 @@ pub async fn page(
         })
         .to_string();
     }
-    span.add_event("search note page es", vec![]);
+    span.add_event("search article page es", vec![]);
     let json =
-        json_request_wrapper::<ESAnalyzeSearchResult<ESNoteEntry, ESAnalyzeNoteHighlight>>(
+        json_request_wrapper::<ESAnalyzeSearchResult<ESArticleEntry, ESAnalyzeArticleHighlight>>(
             &reqwest_client,
             reqwest::Method::GET,
             tracer,
             &format!(
                 "{}/{}/_search",
                 Environment::get_elasticsearch_api(),
-                Environment::get_note_table_name()
+                Environment::get_article_table_name()
             ),
             Some(server_common::fetch::content_type_json_header()),
             Some(document.clone()),
         )
         .await?;
-    span.add_event("search note page es finish", vec![]);
+    span.add_event("search article page es finish", vec![]);
     return Ok(json.hits);
 }
 
 
 
-pub async fn add(reqwest_client: reqwest::Client, data: AddNoteDTO) -> Result<String, CustomError> {
+pub async fn add(reqwest_client: reqwest::Client, data: AddArticleDTO) -> Result<String, CustomError> {
     let tracer = get_tracer();
     let mut span = tracer
-        .span_builder("add note repository")
+        .span_builder("add article repository")
         .with_kind(SpanKind::Internal)
         .start(tracer);
     let current_timestamp_millis = Utc::now().timestamp_millis();
-    let add_item = ESNoteEntry {
+    let add_item = ESArticleEntry {
         title: data.title,
         content: data.content,
         create_time: current_timestamp_millis,
@@ -120,7 +120,7 @@ pub async fn add(reqwest_client: reqwest::Client, data: AddNoteDTO) -> Result<St
         &format!(
             "{}/{}/_doc?refresh=wait_for",
             Environment::get_elasticsearch_api(),
-            Environment::get_note_table_name()
+            Environment::get_article_table_name()
         ),
         Some(server_common::fetch::content_type_json_header()),
         Some(document.clone()),
@@ -136,27 +136,27 @@ pub async fn add(reqwest_client: reqwest::Client, data: AddNoteDTO) -> Result<St
 pub async fn get(
     reqwest_client: reqwest::Client,
     id: &str,
-) -> Result<ESDetail<ESNoteEntry>, CustomError> {
+) -> Result<ESDetail<ESArticleEntry>, CustomError> {
     let tracer = get_tracer();
     let mut span = tracer
-        .span_builder("get note by id repository")
+        .span_builder("get article by id repository")
         .with_kind(SpanKind::Internal)
         .start(tracer);
-    span.add_event("get note by id", vec![]);
-    let json = json_request_wrapper::<ESDetail<ESNoteEntry>>(
+    span.add_event("get article by id", vec![]);
+    let json = json_request_wrapper::<ESDetail<ESArticleEntry>>(
         &reqwest_client,
         reqwest::Method::GET,
         tracer,
         &format!(
             "{}/{}/_doc/{}",
             Environment::get_elasticsearch_api(),
-            Environment::get_note_table_name(),
+            Environment::get_article_table_name(),
             id
         ),
         Some(server_common::fetch::content_type_json_header()),
         None,
     )
     .await?;
-    span.add_event("get note by id end", vec![]);
+    span.add_event("get article by id end", vec![]);
     return Ok(json);
 }

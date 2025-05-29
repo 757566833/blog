@@ -2,7 +2,7 @@ import { toast } from "@workspace/ui/components/sonner";
 import { useLoading } from "@workspace/ui/hooks/use-loading";
 import { LoginRequest, UserEntry } from "@workspace/ui/types/auth";
 import { useCallback, useMemo, useState } from "react";
-import { ESNoteEntry, ESAnalyzeNoteHighlight, AddNoteRequest } from "@workspace/ui/types/note";
+import { ESArticleEntry, ESAnalyzeArticleHighlight, AddArticleRequest } from "@workspace/ui/types/note";
 
 import useSWR from "swr";
 export interface Response<T> {
@@ -200,58 +200,58 @@ export const useUserInfo = () => {
     fetcher,
   );
 }
-export const fetchNotes = async (url?: string) => {
+export const fetchArticles = async (url?: string) => {
   if (url) {
     const response: IEsAnalyzeSearchResponse<
-      ESNoteEntry,
-      ESAnalyzeNoteHighlight
+      ESArticleEntry,
+      ESAnalyzeArticleHighlight
     > = await fetcher(url);
     return response;
   }
 };
-export const useNotePage = (params: URLSearchParams) => {
+export const useArticlePage = (params: URLSearchParams) => {
   const url = useMemo(() => {
     const paramsStr = params.toString();
     if (paramsStr) {
-      return `/api/note/v1/page?${params.toString()}`;
+      return `/api/note/v1/article/page?${params.toString()}`;
     }
   }, [params]);
   return useSWR<
-    IEsAnalyzeSearchResponse<ESNoteEntry, ESAnalyzeNoteHighlight> | undefined
-  >(url, fetchNotes, {
+    IEsAnalyzeSearchResponse<ESArticleEntry, ESAnalyzeArticleHighlight> | undefined
+  >(url, fetchArticles, {
     revalidateOnFocus: false,
   });
 };
 
-export const addNote = async (data?: AddNoteRequest) => {
+export const addArticle = async (data?: AddArticleRequest) => {
   if (!data) {
     return;
   }
-  const res: { account: string } = await fetcher("/api/note/v1", {
+  const res: { account: string } = await fetcher("/api/note/v1/article", {
     method: "POST",
     body: JSON.stringify(data),
   });
   return res;
 }
-export const useAddNote = () => {
-  return useLoading(addNote)
+export const useAddArticle = () => {
+  return useLoading(addArticle)
 }
 
-export const fetchNote = async (url?: string) => {
+export const fetchArticle = async (url?: string) => {
   if (url) {
     const response: IEsDetailResponse<
-      ESNoteEntry
+      ESArticleEntry
     > = await fetcher(url);
     return response;
   }
 };
-export const useNote = (id?: string|null) => {
+export const useArticle = (id?: string | null) => {
   const url = useMemo(() => {
     if (id) {
-      return `/api/note/v1/${id}`;
+      return `/api/note/v1/article/${id}`;
     }
   }, [id]);
   return useSWR<
-    IEsDetailResponse<ESNoteEntry> | undefined
-  >(url, fetchNote);
+    IEsDetailResponse<ESArticleEntry> | undefined
+  >(url, fetchArticle);
 };

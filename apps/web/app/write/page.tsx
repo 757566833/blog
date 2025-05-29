@@ -1,6 +1,6 @@
 "use client"
 import { Header } from "@/components/header";
-import { useAddNote } from "@/service";
+import { useAddArticle } from "@/service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@workspace/ui/components/form";
@@ -29,7 +29,7 @@ function Base() {
       content: "",
     },
   })
-  const [add, addLoading] = useAddNote();
+  const [add, addLoading] = useAddArticle();
   const onSubmit = useCallback(async (data: z.infer<typeof formSchema>) => {
     const response = await add(data);
     if (response) {

@@ -1,1 +1,2 @@
-pub mod add_note;
+pub mod add_article_score;
+pub mod add_article;

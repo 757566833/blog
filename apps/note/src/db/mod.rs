@@ -1,8 +1,22 @@
 use serde_json::json;
-
 use crate::env::Environment;
+use sqlx::postgres::PgPoolOptions;
 
-pub async fn init_db(reqwest_client: reqwest::Client) {
+// "postgres://blog_user:blog_password@192.168.246.22:30200/blog_db"
+pub async fn init_postgres_db()-> sqlx::Pool<sqlx::Postgres> {
+      let pool = PgPoolOptions::new()
+        .max_connections(30)
+        .connect(&format!("postgres://{}:{}@{}/{}", 
+            Environment::get_postgres_user(),
+            Environment::get_postgres_password(),
+            Environment::get_postgres_server_address(),
+            Environment::get_postgres_db_name()
+        )).await.expect("Failed to connect to the database");
+    return pool
+}
+
+
+pub async fn init_es_db(reqwest_client: reqwest::Client) {
     let elasticsearch_api = Environment::get_elasticsearch_api();
     if elasticsearch_api.is_empty() {
         panic!("cant find elasticsearch by env")
@@ -15,17 +29,17 @@ pub async fn init_db(reqwest_client: reqwest::Client) {
     if es_info_response.status().as_u16() >= 300 {
         panic!("es not ready")
     }
-    let note_table_name = Environment::get_note_table_name();
+    let article_table_name = Environment::get_article_table_name();
    
 
-    if note_table_name.is_empty() {
+    if article_table_name.is_empty() {
         panic!("cant find table by env")
     }
-    let task1 = init_note(reqwest_client.clone(), &elasticsearch_api, &note_table_name);
+    let task1 = init_article(reqwest_client.clone(), &elasticsearch_api, &article_table_name);
 
     tokio::join!(task1);
 }
-async fn init_note(reqwest_client: reqwest::Client, elasticsearch_api: &str, table_name: &str) {
+async fn init_article(reqwest_client: reqwest::Client, elasticsearch_api: &str, table_name: &str) {
     let check = reqwest_client
         .head(format!("{}/{}", &elasticsearch_api, table_name))
         .send()

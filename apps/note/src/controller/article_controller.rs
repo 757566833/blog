@@ -5,7 +5,7 @@ use server_common::{fetch::content_type_json_header, response::axum_response};
 use typeshare::typeshare;
 
 use crate::{
-    dto::add_note::AddNoteDTO,
+    dto::add_article::AddArticleDTO,
     middleware::log::get_tracer,
     route::{NoteAppExtension, NoteAppState},
     service,
@@ -13,20 +13,20 @@ use crate::{
 
 #[typeshare]
 #[derive(Deserialize)]
-pub struct NotePageRequest {
+pub struct ArticlePageRequest {
     pub page: Option<u32>,
     pub page_size: Option<u32>,
     pub analyze: Option<String>,
 }
 
-pub async fn note_page(
+pub async fn article_page(
     axum::extract::State(state): axum::extract::State<NoteAppState>,
     Extension(_ext): Extension<NoteAppExtension>,
-    axum::extract::Query(params): axum::extract::Query<NotePageRequest>,
+    axum::extract::Query(params): axum::extract::Query<ArticlePageRequest>,
 ) -> axum::response::Response {
     let tracer = get_tracer();
     let mut _span = tracer
-        .span_builder("get note page controller")
+        .span_builder("get article page controller")
         .with_kind(SpanKind::Internal)
         .start(tracer);
 
@@ -35,50 +35,50 @@ pub async fn note_page(
     let from = (page - 1) * page_size;
     let analyze = params.analyze;
     let response =
-        service::note_service::page(state.reqwest_client, None, from, page_size, analyze).await;
+        service::article_service::page(state.reqwest_client, None, from, page_size, analyze).await;
 
     return axum_response(response, content_type_json_header());
 }
 
 #[typeshare]
 #[derive(Deserialize)]
-pub struct AddNoteRequest {
+pub struct AddArticleRequest {
     pub title: String,
     pub content: String,
 }
-pub async fn add_note(
+pub async fn add_article(
     axum::extract::State(state): axum::extract::State<NoteAppState>,
     Extension(ext): Extension<NoteAppExtension>,
-    axum::extract::Json(params): axum::extract::Json<AddNoteRequest>,
+    axum::extract::Json(params): axum::extract::Json<AddArticleRequest>,
 ) -> axum::response::Response {
     let tracer = get_tracer();
     let mut _span = tracer
-        .span_builder("add note controller")
+        .span_builder("add article controller")
         .with_kind(SpanKind::Internal)
         .start(tracer);
 
-    let dto = AddNoteDTO {
+    let dto = AddArticleDTO {
         account: ext.account.clone(),
         title: params.title,
         content: params.content,
     };
-    let response = service::note_service::add(state.reqwest_client, dto).await;
+    let response = service::article_service::add(state.reqwest_client, dto).await;
 
     return axum_response(response, content_type_json_header());
 }
 
-pub async fn get_note(
+pub async fn get_article(
     axum::extract::State(state): axum::extract::State<NoteAppState>,
     Extension(_ext): Extension<NoteAppExtension>,
     axum::extract::Path(id): axum::extract::Path<String>,
 ) -> axum::response::Response {
     let tracer = get_tracer();
     let mut _span = tracer
-        .span_builder("get note controller")
+        .span_builder("get article controller")
         .with_kind(SpanKind::Internal)
         .start(tracer);
 
-    let response = service::note_service::get(state.reqwest_client, &id).await;
+    let response = service::article_service::get(state.reqwest_client, &id).await;
 
     return axum_response(response, content_type_json_header());
 }

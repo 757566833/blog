@@ -1,6 +1,6 @@
 "use client"
 import { Header } from "@/components/header";
-import { useNotePage } from "@/service";
+import { useArticlePage } from "@/service";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@workspace/ui/components/pagination";
 import { datetimeRender, safeDomString } from "@workspace/ui/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,13 +23,13 @@ function Base() {
     }
     setQuery(nextSearch);
   }, [analyze, page, pageSize]);
-  const { data: notes } = useNotePage(query);
+  const { data: articles } = useArticlePage(query);
   const totalRef = useRef(0);
   const total = useMemo(() => {
-    const t = notes?.hits?.length || totalRef.current;
+    const t = articles?.hits?.length || totalRef.current;
     totalRef.current = t;
     return t
-  }, [notes?.hits?.length])
+  }, [articles?.hits?.length])
   const pageList = useMemo(() => {
     const current = (page - 1) * pageSize;
     const right = total - current;
@@ -66,7 +66,7 @@ function Base() {
     <div className="flex flex-col h-screen">
       <Header />
       <div className="flex-1 h-0 overflow-y-auto">
-        {notes?.hits?.map((note) => {
+        {articles?.hits?.map((note) => {
           const title = note.highlight?.title?.join("...") || note._source.title;
           const content = note.highlight?.content?.join("...") || note._source.content;
           return <div key={`analyze_${note._id}`} className="p-4 border-b ">

@@ -3,7 +3,7 @@ use typeshare::typeshare;
 
 #[typeshare]
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ESNoteEntry {
+pub struct ESArticleEntry {
     pub account: String,
     pub title: String,
     pub content: String,
@@ -15,7 +15,7 @@ pub struct ESNoteEntry {
 
 #[typeshare]
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ESAnalyzeNoteHighlight {
+pub struct ESAnalyzeArticleHighlight {
     pub title: Option<Vec<String>>,
     pub content: Option<Vec<String>>,
 }
