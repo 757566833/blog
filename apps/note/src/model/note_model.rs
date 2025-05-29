@@ -7,8 +7,10 @@ pub struct ESNoteEntry {
     pub account: String,
     pub title: String,
     pub content: String,
-    pub create_time: i32,
-    pub update_time: i32,
+    #[typeshare(serialized_as = "i32")]
+    pub create_time: i64,
+    #[typeshare(serialized_as = "i32")]
+    pub update_time: i64,
 }
 
 #[typeshare]

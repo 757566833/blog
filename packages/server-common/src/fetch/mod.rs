@@ -104,6 +104,7 @@ where
             error.to_string(),
         )))
     })?;
+    println!("response text: {}", text);
     span.set_attribute(KeyValue::new("response.body", text.clone()));
     if status.as_u16() >= 300 {
         return Err(log_error(CustomError::HTTP(format!(

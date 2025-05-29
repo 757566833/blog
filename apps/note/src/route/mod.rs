@@ -3,7 +3,10 @@ use crate::{
     db::init_db,
     middleware::{extension::with_extension, log::with_log_tracer},
 };
-use axum::{Extension, Router, middleware, routing::get};
+use axum::{
+    Extension, Router, middleware,
+    routing::{get, post},
+};
 
 #[derive(Clone)]
 pub struct NoteAppState {
@@ -13,7 +16,7 @@ pub struct NoteAppState {
 
 #[derive(Clone)]
 pub struct NoteAppExtension {
-    pub uid: String,
+    pub account: String,
 }
 
 pub async fn init_route() -> Router {
@@ -24,10 +27,12 @@ pub async fn init_route() -> Router {
     let app: Router = Router::new()
         .route("/api/test", get(controller::test::get))
         .route("/v1/page", get(controller::note_controller::note_page))
+        .route("/v1", post(controller::note_controller::add_note))
+        .route("/v1/{id}", get(controller::note_controller::get_note))
         .layer(middleware::from_fn(with_log_tracer))
         .layer(middleware::from_fn(with_extension))
         .layer(Extension(NoteAppExtension {
-            uid: "".to_string(),
+            account: "".to_string(),
         }))
         .layer(tower_http::limit::RequestBodyLimitLayer::new(
             1024 * 1024 * 1024 * 10,

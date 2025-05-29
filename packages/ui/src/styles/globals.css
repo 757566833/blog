@@ -125,3 +125,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+em{
+  color: red;
+}

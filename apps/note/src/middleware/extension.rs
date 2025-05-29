@@ -9,11 +9,11 @@ pub async fn with_extension(
     let authorization = headers
         .get(axum::http::header::AUTHORIZATION)
         .unwrap_or(&default_uid);
-    let uid = authorization.to_str().unwrap_or("").to_string();
+    let account = authorization.to_str().unwrap_or("").to_string();
 
    if let Some(ext) = req.extensions_mut().get_mut::<NoteAppExtension>() {
-        // 修改 uid
-        ext.uid = uid;
+        // 修改 account
+        ext.account = account;
     }
     let response = next.run(req).await;
     Ok(response)

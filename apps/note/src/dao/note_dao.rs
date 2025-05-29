@@ -1,9 +1,10 @@
+use chrono::Utc;
 use opentelemetry::trace::{Span, SpanKind, Tracer};
 use serde_json::json;
-use server_common::{constant::{ESAnalyzeSearchResult, ESHitsAnalyze}, error::CustomError, fetch::json_request_wrapper};
+use server_common::{constant::{ESAnalyzeSearchResult, ESDetail, ESHitsAnalyze, ESInsertOrUpdateResponse}, error::CustomError, fetch::json_request_wrapper};
 
 use crate::{
-    env::Environment, middleware::log::get_tracer, model::note_model::{ESAnalyzeNoteHighlight, ESNoteEntry}
+    dto::add_note::AddNoteDTO, env::Environment, middleware::log::get_tracer, model::note_model::{ESAnalyzeNoteHighlight, ESNoteEntry}
 };
 
 pub async fn page(
@@ -89,45 +90,73 @@ pub async fn page(
         )
         .await?;
     span.add_event("search note page es finish", vec![]);
-
-    // let response = reqwest_client
-    //     .get(format!(
-    //         "{}/{}/_search",
-    //         Environment::get_elasticsearch_api(),
-    //         Environment::get_note_table_name()
-    //     ))
-    //     .body(document)
-    //     .headers(server_common::fetch::content_type_json_header())
-    //     .send()
-    //     .await
-    //     .map_err(|error| {
-    //         log_error(CustomError::HTTP(format!(
-    //             "http error: {},{}",
-    //             error.to_string(),
-    //             "get note list  interface error"
-    //         )))
-    //     })?;
-    // span.set_attribute(KeyValue::new(
-    //     "response.status",
-    //     response.status().to_string(),
-    // ));
-    // let text = response.text().await.map_err(|error| {
-    //     log_error(CustomError::HTTP(format!(
-    //         "http error: {},{}",
-    //         error.to_string(),
-    //         "search note page response to string error"
-    //     )))
-    // })?;
-    // span.set_attribute(KeyValue::new("response.body", text.clone()));
-    // let json = serde_json::from_str::<
-    //     ESAnalyzeSearchResult<ESnote, ESAnalyzenoteHighlight>,
-    // >(&text)
-    // .map_err(|error| {
-    //     log_error(CustomError::JSON(format!(
-    //         "json: {},{}",
-    //         error.to_string(),
-    //         "get note page response json deserialization error"
-    //     )))
-    // })?;
     return Ok(json.hits);
+}
+
+
+
+pub async fn add(reqwest_client: reqwest::Client, data: AddNoteDTO) -> Result<String, CustomError> {
+    let tracer = get_tracer();
+    let mut span = tracer
+        .span_builder("add note repository")
+        .with_kind(SpanKind::Internal)
+        .start(tracer);
+    let current_timestamp_millis = Utc::now().timestamp_millis();
+    let add_item = ESNoteEntry {
+        title: data.title,
+        content: data.content,
+        create_time: current_timestamp_millis,
+        account: data.account,
+        update_time: current_timestamp_millis,
+    };
+    span.add_event("params to json string ", vec![]);
+    let document = json!(add_item).to_string();
+    span.add_event("params to json string end ", vec![]);
+    span.add_event("params insert es ", vec![]);
+    let json = json_request_wrapper::<ESInsertOrUpdateResponse>(
+        &reqwest_client,
+        reqwest::Method::POST,
+        tracer,
+        &format!(
+            "{}/{}/_doc?refresh=wait_for",
+            Environment::get_elasticsearch_api(),
+            Environment::get_note_table_name()
+        ),
+        Some(server_common::fetch::content_type_json_header()),
+        Some(document.clone()),
+    )
+    .await?;
+    span.add_event("params insert es end", vec![]);
+   
+    return Ok(json._id);
+}
+
+
+// get by id
+pub async fn get(
+    reqwest_client: reqwest::Client,
+    id: &str,
+) -> Result<ESDetail<ESNoteEntry>, CustomError> {
+    let tracer = get_tracer();
+    let mut span = tracer
+        .span_builder("get note by id repository")
+        .with_kind(SpanKind::Internal)
+        .start(tracer);
+    span.add_event("get note by id", vec![]);
+    let json = json_request_wrapper::<ESDetail<ESNoteEntry>>(
+        &reqwest_client,
+        reqwest::Method::GET,
+        tracer,
+        &format!(
+            "{}/{}/_doc/{}",
+            Environment::get_elasticsearch_api(),
+            Environment::get_note_table_name(),
+            id
+        ),
+        Some(server_common::fetch::content_type_json_header()),
+        None,
+    )
+    .await?;
+    span.add_event("get note by id end", vec![]);
+    return Ok(json);
 }

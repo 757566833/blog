@@ -2,7 +2,7 @@ import { toast } from "@workspace/ui/components/sonner";
 import { useLoading } from "@workspace/ui/hooks/use-loading";
 import { LoginRequest, UserEntry } from "@workspace/ui/types/auth";
 import { useCallback, useMemo, useState } from "react";
-import { ESNoteEntry, ESAnalyzeNoteHighlight } from "@workspace/ui/types/note";
+import { ESNoteEntry, ESAnalyzeNoteHighlight, AddNoteRequest } from "@workspace/ui/types/note";
 
 import useSWR from "swr";
 export interface Response<T> {
@@ -13,7 +13,7 @@ export interface Response<T> {
 
 export const usePage = () => {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const next = useCallback(() => {
     setPage((p) => p + 1);
   }, []);
@@ -221,4 +221,37 @@ export const useNotePage = (params: URLSearchParams) => {
   >(url, fetchNotes, {
     revalidateOnFocus: false,
   });
+};
+
+export const addNote = async (data?: AddNoteRequest) => {
+  if (!data) {
+    return;
+  }
+  const res: { account: string } = await fetcher("/api/note/v1", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return res;
+}
+export const useAddNote = () => {
+  return useLoading(addNote)
+}
+
+export const fetchNote = async (url?: string) => {
+  if (url) {
+    const response: IEsDetailResponse<
+      ESNoteEntry
+    > = await fetcher(url);
+    return response;
+  }
+};
+export const useNote = (id?: string|null) => {
+  const url = useMemo(() => {
+    if (id) {
+      return `/api/note/v1/${id}`;
+    }
+  }, [id]);
+  return useSWR<
+    IEsDetailResponse<ESNoteEntry> | undefined
+  >(url, fetchNote);
 };

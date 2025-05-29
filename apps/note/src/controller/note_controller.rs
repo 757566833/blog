@@ -5,6 +5,7 @@ use server_common::{fetch::content_type_json_header, response::axum_response};
 use typeshare::typeshare;
 
 use crate::{
+    dto::add_note::AddNoteDTO,
     middleware::log::get_tracer,
     route::{NoteAppExtension, NoteAppState},
     service,
@@ -25,7 +26,7 @@ pub async fn note_page(
 ) -> axum::response::Response {
     let tracer = get_tracer();
     let mut _span = tracer
-        .span_builder("get note controller")
+        .span_builder("get note page controller")
         .with_kind(SpanKind::Internal)
         .start(tracer);
 
@@ -35,6 +36,49 @@ pub async fn note_page(
     let analyze = params.analyze;
     let response =
         service::note_service::page(state.reqwest_client, None, from, page_size, analyze).await;
+
+    return axum_response(response, content_type_json_header());
+}
+
+#[typeshare]
+#[derive(Deserialize)]
+pub struct AddNoteRequest {
+    pub title: String,
+    pub content: String,
+}
+pub async fn add_note(
+    axum::extract::State(state): axum::extract::State<NoteAppState>,
+    Extension(ext): Extension<NoteAppExtension>,
+    axum::extract::Json(params): axum::extract::Json<AddNoteRequest>,
+) -> axum::response::Response {
+    let tracer = get_tracer();
+    let mut _span = tracer
+        .span_builder("add note controller")
+        .with_kind(SpanKind::Internal)
+        .start(tracer);
+
+    let dto = AddNoteDTO {
+        account: ext.account.clone(),
+        title: params.title,
+        content: params.content,
+    };
+    let response = service::note_service::add(state.reqwest_client, dto).await;
+
+    return axum_response(response, content_type_json_header());
+}
+
+pub async fn get_note(
+    axum::extract::State(state): axum::extract::State<NoteAppState>,
+    Extension(_ext): Extension<NoteAppExtension>,
+    axum::extract::Path(id): axum::extract::Path<String>,
+) -> axum::response::Response {
+    let tracer = get_tracer();
+    let mut _span = tracer
+        .span_builder("get note controller")
+        .with_kind(SpanKind::Internal)
+        .start(tracer);
+
+    let response = service::note_service::get(state.reqwest_client, &id).await;
 
     return axum_response(response, content_type_json_header());
 }

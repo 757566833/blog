@@ -3,6 +3,11 @@
 */
 
 
+export interface AddNoteRequest {
+	title: string;
+	content: string;
+}
+
 export interface ESAnalyzeNoteHighlight {
 	title?: string[];
 	content?: string[];

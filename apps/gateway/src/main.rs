@@ -163,12 +163,29 @@ async fn proxy_handler(
         return server_common::response::empty_response(axum::http::StatusCode::BAD_GATEWAY, None);
     }
 }
-static WHITELIST: [&'static str; 4] = [
+static WHITELIST: [&'static str; 5] = [
     "/auth/v1/user/login",
     "/auth/v1/user/logout",
     "/auth/v1/user/info",
     "/note/v1/page",
+    "/note/v1/*",
 ];
+
+fn is_whitelisted(path: &str) -> bool {
+  
+    for rule in WHITELIST.iter() {
+        if rule.ends_with("/*") {
+            let prefix = &rule[..rule.len() - 1]; // remove '*'
+            if path.starts_with(prefix) {
+                return true;
+            }
+        } else if path == *rule {
+            return true;
+        }
+    }
+
+    false
+}
 // 中间件：为每个响应添加一个 Header uid 应该是解析token 获取，但是这个项目没有登录，直接在前端设置了 这里直接获取
 async fn add_gateway_header(
     axum::extract::State(_state): axum::extract::State<GatewayAppState>,
@@ -263,7 +280,7 @@ async fn add_gateway_header(
         );
         return Ok(res);
     } else {
-        if WHITELIST.contains(&path) {
+        if is_whitelisted(&path) {
             let uuid = Uuid::new_v4();
             let tracer_name = format!("blog-gateway-{}", uuid);
             let tracer = global::tracer(tracer_name);

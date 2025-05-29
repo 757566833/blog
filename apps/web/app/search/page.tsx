@@ -2,30 +2,31 @@
 import { Header } from "@/components/header";
 import { useNotePage } from "@/service";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from "@workspace/ui/components/pagination";
-import { datetimeRender } from "@workspace/ui/lib/utils";
+import { datetimeRender, safeDomString } from "@workspace/ui/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 const MAX_PAGE_BUTTONS = 5;
 export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const page = useMemo(()=>parseInt(searchParams.get("page") || "1", 10),[searchParams]);
-  const pageSize = useMemo(()=>parseInt(searchParams.get("page_size") || "10", 10),[searchParams]);
+  const page = useMemo(() => parseInt(searchParams.get("page") || "1", 10), [searchParams]);
+  const analyze = useMemo(() => searchParams.get("analyze"), [searchParams]);
+  const pageSize = useMemo(() => parseInt(searchParams.get("page_size") || "10", 10), [searchParams]);
   const [query, setQuery] = useState(new URLSearchParams());
   useEffect(() => {
     const nextSearch = new URLSearchParams();
     nextSearch.append("page", page.toString());
     nextSearch.append("page_size", pageSize.toString());
     nextSearch.append("time", new Date().getTime().toString());
+    if (analyze) {
+      nextSearch.append("analyze", analyze);
+    }
     setQuery(nextSearch);
-  }, [page, pageSize]);
-
-
+  }, [analyze, page, pageSize]);
   const { data: notes } = useNotePage(query);
   const totalRef = useRef(0);
   const total = useMemo(() => {
-    const t =  notes?.hits?.length || totalRef.current;
+    const t = notes?.hits?.length || totalRef.current;
     totalRef.current = t;
     return t
   }, [notes?.hits?.length])
@@ -52,17 +53,25 @@ export default function Page() {
     }
     return result;
   }, [page, pageSize, total]);
+  const handlePageChange = useCallback((pageNum: number) => {
+    const nextSearch = new URLSearchParams(query);
+    nextSearch.set("page", pageNum.toString());
+    nextSearch.append("time", new Date().getTime().toString());
+    router.push(`?${nextSearch.toString()}`);
+  }, [query, router]);
   const handleOpen = useCallback((id: string) => {
-      globalThis?.window.open(`/note?id=${id}`);
-    }, [])
+    globalThis?.window.open(`/note?id=${id}`);
+  }, [])
   return (
     <div className="flex flex-col h-screen">
       <Header />
       <div className="flex-1 h-0 overflow-y-auto">
         {notes?.hits?.map((note) => {
-          return <div key={note._id} className="p-4 border-b">
-            <h2 className="text-xl font-bold cursor-pointer" onClick={() => handleOpen(note._id)}>{note._source?.title || ""}</h2>
-            <p className="text-gray-600" >{note._source?.content || ""}</p>
+          const title = note.highlight?.title?.join("...") || note._source.title;
+          const content = note.highlight?.content?.join("...") || note._source.content;
+          return <div key={`analyze_${note._id}`} className="p-4 border-b ">
+            <h2 className="text-xl font-bold cursor-pointer" dangerouslySetInnerHTML={{ __html: safeDomString(title) }}  onClick={()=>handleOpen(note._id)}/>
+            <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: safeDomString(content) }} />
             <div className="text-sm text-gray-500">
               {datetimeRender(note._source.create_time)} by {note._source.account}
             </div>
@@ -75,7 +84,7 @@ export default function Page() {
 
             {pageList.map((pageNum) => (
               <PaginationItem key={pageNum}>
-                <PaginationLink onClick={() => router.push(`?page=${pageNum}`)} isActive={page === pageNum}>{pageNum}</PaginationLink>
+                <PaginationLink onClick={() => handlePageChange(pageNum)} isActive={page === pageNum}>{pageNum}</PaginationLink>
               </PaginationItem>
             ))}
 

@@ -1,32 +1,39 @@
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/frame.css";
-import { Editor, rootCtx } from "@milkdown/kit/core";
-import { listener, listenerCtx } from "@milkdown/kit/plugin/listener";
-import { commonmark } from "@milkdown/kit/preset/commonmark";
+import { Crepe } from "@milkdown/crepe";
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react";
-import { nord } from "@milkdown/theme-nord";
 import React from "react";
 
-const MilkdownEditor: React.FC<{ onChange?: (value: string) => void }> = (props) => {
-  const { onChange } = props;
+export type MarkdownEditorType = Crepe | null;
+
+
+const MilkdownEditor: React.FC<{ onChange?: (value: string) => void, ref?: React.RefObject<Crepe | null> | React.RefCallback<Crepe | null> }> = (props) => {
+  const { onChange, ref } = props;
+
+  const innerRef = React.useRef<Crepe | null>(null);
   useEditor((root) => {
-    return Editor.make()
-      .config(nord)
-      .config((ctx) => {
-        ctx.set(rootCtx, root);
-        ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
-          // Save content to your backend or storage
-          onChange?.(markdown);
-        });
-      })
-      .use(commonmark)
-      .use(listener)
+    const editor = new Crepe({ root })
+    editor.on((listener) => {
+      listener.markdownUpdated((ctx, markdown) => {
+        onChange?.(markdown);
+      });
+    });
+    innerRef.current = editor;
+    if (ref) {
+      if (typeof ref === "function") {
+        ref(editor);
+      } else if ("current" in ref) {
+        ref.current = editor;
+      }
+    }
+
+    return editor
   }, [onChange]);
   return <Milkdown />;
 };
 
-export const MarkdownEditor: React.FC<{ onChange?: (value: string) => void }> = (props) => {
-  const { onChange } = props;
+export const MarkdownEditor: React.FC<{ onChange?: (value: string) => void, ref?: React.RefObject<Crepe | null> | React.RefCallback<Crepe | null> }> = (props) => {
+  const { onChange, ref } = props;
   return (
     <MilkdownProvider>
       <style>{`
@@ -38,7 +45,7 @@ export const MarkdownEditor: React.FC<{ onChange?: (value: string) => void }> = 
   flex: 1;
 }
         `}</style>
-      <MilkdownEditor onChange={onChange} />
+      <MilkdownEditor onChange={onChange} ref={ref} />
     </MilkdownProvider>
   );
 };
