@@ -142,7 +142,7 @@ async fn proxy_handler(
                         error!("request error: {:?}", e);
                         return server_common::response::empty_response(
                             axum::http::StatusCode::BAD_GATEWAY,
-                            None
+                            None,
                         );
                     }
                 }
@@ -160,10 +160,15 @@ async fn proxy_handler(
     } else {
         // return (axum::http::StatusCode::NOT_FOUND, "path not found");
         error!("target origin not found");
-        return server_common::response::empty_response(axum::http::StatusCode::BAD_GATEWAY,None);
+        return server_common::response::empty_response(axum::http::StatusCode::BAD_GATEWAY, None);
     }
 }
-static WHITELIST: [&'static str; 2] = ["/auth/v1/user/login", "/auth/v1/user/logout"];
+static WHITELIST: [&'static str; 4] = [
+    "/auth/v1/user/login",
+    "/auth/v1/user/logout",
+    "/auth/v1/user/info",
+    "/note/v1/page",
+];
 // 中间件：为每个响应添加一个 Header uid 应该是解析token 获取，但是这个项目没有登录，直接在前端设置了 这里直接获取
 async fn add_gateway_header(
     axum::extract::State(_state): axum::extract::State<GatewayAppState>,
@@ -180,11 +185,10 @@ async fn add_gateway_header(
     let tracer_name = format!("blog-gateway-{}", uuid);
 
     println!(
-        "gateway add trace id to header, path: {}, uuid: {}, method: {}, query: {}",
-        path, uuid, method, query
+        "gateway add trace id to header, uuid: {}, method: {}, path: {}, query: {}",
+        uuid, method, path, query
     );
     if WHITELIST.contains(&path) {
-        println!("whitelist path: {}, uuid: {}", path, uuid);
         let tracer = global::tracer(tracer_name);
         let span = tracer
             .span_builder(String::from(format!("blog-gateway-proxy-{}", uuid)))
@@ -259,7 +263,7 @@ async fn add_gateway_header(
         let span = tracer
             .span_builder(String::from(format!(
                 "blog-gateway-proxy-account-{}",
-                account 
+                account
             )))
             .with_kind(SpanKind::Server)
             .with_attributes(vec![

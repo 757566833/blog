@@ -1,8 +1,8 @@
 import { toast } from "@workspace/ui/components/sonner";
 import { useLoading } from "@workspace/ui/hooks/use-loading";
 import { LoginRequest, UserEntry } from "@workspace/ui/types/auth";
-
 import { useCallback, useMemo, useState } from "react";
+import { ESNoteEntry, ESAnalyzeNoteHighlight } from "@workspace/ui/types/note";
 
 import useSWR from "swr";
 export interface Response<T> {
@@ -120,6 +120,8 @@ const fetchWrapper = async (...args: Parameters<typeof fetch>) => {
 };
 
 
+
+
 export interface IEsHits<T> {
   _index: string;
   _id: string;
@@ -140,31 +142,8 @@ export interface IChat {
   uid: string;
 }
 
-export interface IEmbedding {
-  topic: string;
-  topic_embedding: number[];
-  explain: string;
-  explain_embedding: number[];
-  relationship: string;
-  relationship_embedding: number[];
-  create_time: number;
-}
 
-export interface IAnalyzeEmbeddingHighlight {
-  explain?: string[];
-  relationship?: string[];
-  topic?: string[];
-}
 
-export interface IHistory {
-  uid: string;
-  chat_id: string;
-  content: string;
-  role: string;
-  favor_diff: number;
-  classification: string;
-  create_time: number;
-}
 
 export interface IEsSearchResponse<T> {
   total: {
@@ -192,17 +171,6 @@ export interface IEsDetailResponse<T> {
   _source?: T;
 }
 
-export interface IDefaultPrompt {
-  version: number;
-  content: string[];
-  create_time: number;
-}
-export interface IPrompt {
-  uid: string;
-  version: number;
-  content: string[];
-  create_time: number;
-}
 export const login = async (data?: LoginRequest) => {
   if (!data) {
     return;
@@ -222,3 +190,25 @@ export const useUserInfo = () => {
     fetcher,
   );
 }
+export const fetchNotes = async (url?: string) => {
+  if (url) {
+    const response: IEsAnalyzeSearchResponse<
+      ESNoteEntry,
+      ESAnalyzeNoteHighlight
+    > = await fetcher(url);
+    return response;
+  }
+};
+export const useNotePage = (params: URLSearchParams) => {
+  const url = useMemo(() => {
+    const paramsStr = params.toString();
+    if (paramsStr) {
+      return `/api/note/v1/page?${params.toString()}`;
+    }
+  }, [params]);
+  return useSWR<
+    IEsAnalyzeSearchResponse<ESNoteEntry, ESAnalyzeNoteHighlight> | undefined
+  >(url, fetchNotes, {
+    revalidateOnFocus: false,
+  });
+};

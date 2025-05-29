@@ -1,31 +1,8 @@
-# shadcn/ui monorepo template
+# ai
 
-This template is for creating a monorepo with shadcn/ui.
+## 前言
 
-## Usage
-
-```bash
-pnpm dlx shadcn@latest init
-```
-
-## Adding components
-
-To add components to your app, run the following command at the root of your `web` app:
-
-```bash
-pnpm dlx shadcn@latest add button -c apps/web
-```
-
-This will place the ui components in the `packages/ui/src/components` directory.
-
-## Tailwind
-
-Your `tailwind.config.ts` and `globals.css` are already set up to use the components from the `ui` package.
-
-## Using components
-
-To use the components in your app, import them from the `ui` package.
-
-```tsx
-import { Button } from "@workspace/ui/components/button"
-```
+1. 文件内容肯定不能过长，提交之前要format，format之后超出300行就应该是有问题了，要确保ai收得到
+2. 肯定要规范化，类型文件东一个西一个肯定不行，方便喂给ai
+3. 链路追踪肯定要有，堆栈支持效果不好的情况下，能不能拿链路追踪的信息顶上
+4. 编译时大于运行时，不能什么都在运行时里面，没办法分析

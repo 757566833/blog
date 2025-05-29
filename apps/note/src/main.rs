@@ -2,9 +2,11 @@ use env::Environment;
 use tokio::signal;
 
 pub mod controller;
+pub mod db;
 pub mod env;
 pub mod middleware;
-pub mod repository;
+pub mod model;
+pub mod dao;
 pub mod route;
 pub mod service;
 
@@ -21,9 +23,9 @@ async fn main() {
     let (sdk_logger_provider, sdk_tracer_provider, sdk_mete_provider) =
         server_common::opentelemetry::init_opentelemetry(&opentelemetry_server_url,"blog-note");
     // run it
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:11001").await;
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:11002").await;
     if let Ok(listener) = listener {
-        println!("listening on {}", "0.0.0.0:11001");
+        println!("listening on {}", "0.0.0.0:11002");
 
         // 启动服务和监听退出信号，谁先完成就退出
         tokio::select! {

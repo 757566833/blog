@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use server_common::{fetch::content_type_json_header, response::axum_response};
 
 use crate::{
-    middleware::log::get_tracer,  route::{WorkflowAppExtension, WorkflowAppState}, service
+    middleware::log::get_tracer,  route::{NoteAppExtension, NoteAppState}, service
 };
 
 #[derive(Deserialize, Serialize)]
@@ -18,8 +18,8 @@ pub struct AiAddQuestionRequest {
     pub query: String,
 }
 pub async fn get(
-    axum::extract::State(_state): axum::extract::State<WorkflowAppState>,
-    Extension(_ext): Extension<WorkflowAppExtension>,
+    axum::extract::State(_state): axum::extract::State<NoteAppState>,
+    Extension(_ext): Extension<NoteAppExtension>,
 ) -> axum::response::Response {
     let tracer = get_tracer();
     let mut _span = tracer

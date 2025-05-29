@@ -97,19 +97,13 @@ pub async fn login(
 pub async fn info(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: String,
-) -> Result<UserEntry, CustomError> {
+) -> Result<Option<UserEntry>, CustomError> {
     let tracer = get_tracer();
     let mut _span = tracer
         .span_builder("user info service")
         .with_kind(SpanKind::Internal)
         .start(tracer);
 
-    let user = user_dao::get_user_by_account(pool, &account).await?;
-    if let Some(user) = user {
-        return Ok(user);
-    } else {
-        return Err(log_error(CustomError::Service(
-            "User not found".to_string(),
-        )));
-    }
+    let user: Option<UserEntry> = user_dao::get_user_by_account(pool, &account).await?;
+    return Ok(user);
 }

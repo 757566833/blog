@@ -1,4 +1,4 @@
-use crate::route::WorkflowAppExtension;
+use crate::route::NoteAppExtension;
 
 pub async fn with_extension(
     mut req: axum::extract::Request,
@@ -10,10 +10,8 @@ pub async fn with_extension(
         .get(axum::http::header::AUTHORIZATION)
         .unwrap_or(&default_uid);
     let uid = authorization.to_str().unwrap_or("").to_string();
-    if uid.is_empty() {
-        return Err(axum::http::StatusCode::UNAUTHORIZED);
-    }
-   if let Some(ext) = req.extensions_mut().get_mut::<WorkflowAppExtension>() {
+
+   if let Some(ext) = req.extensions_mut().get_mut::<NoteAppExtension>() {
         // 修改 uid
         ext.uid = uid;
     }
