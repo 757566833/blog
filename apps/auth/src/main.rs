@@ -1,4 +1,7 @@
+use std::panic;
+
 use env::Environment;
+use server_common::macro_panic_log_error;
 use tokio::signal;
 
 pub mod controller;
@@ -14,6 +17,26 @@ pub mod service;
 #[tokio::main]
 async fn main() {
     dotenvy::from_filename("apps/auth/.env").ok();
+
+    panic::set_hook(Box::new(|info| {
+        let payload = info.payload();
+        let location = info.location();
+        let mut file = "";
+        let mut line = 0;
+        if let Some(location) = location {
+            file = location.file();
+            line = location.line();
+        }
+        let error_message;
+        if let Some(message) = payload.downcast_ref::<&str>() {
+            error_message = message.to_string();
+        } else if let Some(message) = payload.downcast_ref::<String>() {
+            error_message = message.clone();
+        } else {
+            error_message = "无法解析".to_string();
+        }
+        macro_panic_log_error!(file, line, error_message);
+    }));
     let router = route::init_route().await;
 
     let opentelemetry_server_url = Environment::get_opentelemetry_server_url();

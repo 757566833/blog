@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{panic, sync::Arc};
 
 use axum::{
     Router,
@@ -13,7 +13,7 @@ use opentelemetry::{
     trace::{SpanKind, TraceContextExt, Tracer},
 };
 use opentelemetry_http::HeaderInjector;
-use server_common::{constant::TEXT_PLAIN, fetch::content_type_json_header};
+use server_common::{constant::TEXT_PLAIN, fetch::content_type_json_header, macro_panic_log_error};
 use tokio::signal;
 use tracing::{Level, error, span};
 use uuid::Uuid;
@@ -29,6 +29,26 @@ pub struct GatewayAppState {
 #[tokio::main]
 async fn main() {
     dotenvy::from_filename("apps/gateway/.env").ok();
+
+    panic::set_hook(Box::new(|info| {
+        let payload = info.payload();
+        let location = info.location();
+        let mut file = "";
+        let mut line = 0;
+        if let Some(location) = location {
+            file = location.file();
+            line = location.line();
+        }
+        let error_message;
+        if let Some(message) = payload.downcast_ref::<&str>() {
+            error_message = message.to_string();
+        } else if let Some(message) = payload.downcast_ref::<String>() {
+            error_message = message.clone();
+        } else {
+            error_message = "无法解析".to_string();
+        }
+        macro_panic_log_error!(file, line, error_message);
+    }));
     let client = Arc::new(reqwest::Client::new());
     let opentelemetry_server_url = Environment::get_opentelemetry_server_url();
     if opentelemetry_server_url.is_empty() {

@@ -26,6 +26,7 @@
       "@tailwindcss/oxide",
       "core-js-pure",
       "pre-commit",
+      "protobufjs",
       "sharp",
       "spawn-sync"
     ]
