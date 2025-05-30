@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[instrument]
-pub async fn page(
+pub async fn article_dao_page(
     reqwest_client: reqwest::Client,
     sort: Option<&str>,
     from: u32,
@@ -88,7 +88,7 @@ pub async fn page(
 
 
 #[instrument]
-pub async fn add(reqwest_client: reqwest::Client, data: AddArticleDTO) -> Result<String, CustomError> {
+pub async fn article_dao_add(reqwest_client: reqwest::Client, data: AddArticleDTO) -> Result<String, CustomError> {
     let current_timestamp_millis = Utc::now().timestamp_millis();
     let add_item = ESArticleEntry {
         title: data.title,
@@ -115,7 +115,7 @@ pub async fn add(reqwest_client: reqwest::Client, data: AddArticleDTO) -> Result
 }
 
 #[instrument]
-pub async fn get(
+pub async fn article_dao_get(
     reqwest_client: reqwest::Client,
     id: &str,
 ) -> Result<ESDetail<ESArticleEntry>, CustomError> {

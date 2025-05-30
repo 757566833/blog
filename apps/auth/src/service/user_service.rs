@@ -15,7 +15,7 @@ pub async fn user_service_login(
     account: String,
     password: String,
 ) -> Result<String, CustomError> {
-    let option_account = account_dao::get_account_by_account(pool, &account).await?;
+    let option_account = account_dao::account_dao_get_account_by_account(pool, &account).await?;
     if let Some(account) = option_account {
         let hashed = account.password_hash.clone();
         let is_valid = bcrypt::verify(password, &hashed).map_err(|error| {
@@ -64,13 +64,13 @@ pub async fn user_service_login(
             password_hash: hashed.clone(), // 假设密码已经被哈希处理
         };
 
-        let add_account_id = account_dao::add_account(tx.as_mut(), add_account).await?;
+        let add_account_id = account_dao::account_dao_add_account(tx.as_mut(), add_account).await?;
         let add_user = dto::add_user_dto::AddUserDto {
             account: account.clone(),
             nickname: account.clone(),
             avatar_url: "".to_string(), // 默认头像URL
         };
-        let add_user_id = user_dao::add_user(tx.as_mut(), add_user).await?;
+        let add_user_id = user_dao::user_dao_add_user(tx.as_mut(), add_user).await?;
         if add_account_id > 0 && add_user_id > 0 {
             // 提交事务
             tx.commit().await.map_err(|error| {
@@ -96,7 +96,7 @@ pub async fn user_service_info(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: String,
 ) -> Result<Option<UserEntry>, CustomError> {
-    let user: Option<UserEntry> = user_dao::get_user_by_account(pool, &account).await?;
+    let user: Option<UserEntry> = user_dao::user_dao_get_user_by_account(pool, &account).await?;
     return Ok(user);
 }
 #[instrument]

@@ -10,7 +10,7 @@ use crate::{
     model::account_entry::AccountEntry,
 };
 #[instrument]
-pub async fn add_account<'e, E>(executor: E, account: AddAccountDto) -> Result<u64, CustomError>
+pub async fn account_dao_add_account<'e, E>(executor: E, account: AddAccountDto) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {
@@ -39,7 +39,7 @@ where
 }
 
 #[instrument]
-pub async fn update_account<'e, E>(executor: E, account: EditAccountDto) -> Result<u64, CustomError>
+pub async fn account_dao_update_account<'e, E>(executor: E, account: EditAccountDto) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {
@@ -67,7 +67,7 @@ where
     return Ok(result.rows_affected());
 }
 #[instrument]
-pub async fn get_account(
+pub async fn account_dao_get_account(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: GetAccountDto,
 ) -> Result<String, CustomError> {
@@ -103,7 +103,7 @@ pub async fn get_account(
 }
 
 #[instrument]
-pub async fn get_account_count(
+pub async fn account_dao_get_account_count(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: &str,
 ) -> Result<i64, CustomError> {
@@ -130,7 +130,7 @@ pub async fn get_account_count(
 }
 
 #[instrument]
-pub async fn get_account_by_account(
+pub async fn account_dao_get_account_by_account(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: &str,
 ) -> Result<Option<AccountEntry>, CustomError> {

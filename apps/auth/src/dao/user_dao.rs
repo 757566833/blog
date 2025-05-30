@@ -4,7 +4,7 @@ use sqlx::{Executor, Postgres, postgres::PgPool};
 use tracing::instrument;
 
 #[instrument]
-pub async fn add_user<'e, E>(executor: E, user: AddUserDto) -> Result<u64, CustomError>
+pub async fn user_dao_add_user<'e, E>(executor: E, user: AddUserDto) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {
@@ -33,7 +33,7 @@ where
 }
 
 #[instrument]
-pub async fn update_user<'e, E>(executor: E, user: EditUserDto) -> Result<u64, CustomError>
+pub async fn user_dao_update_user<'e, E>(executor: E, user: EditUserDto) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {
@@ -62,7 +62,7 @@ where
 }
 
 #[instrument]
-pub async fn get_user_by_account(
+pub async fn user_dao_get_user_by_account(
     pool: &PgPool,
     account: &str,
 ) -> Result<Option<UserEntry>, CustomError> {

@@ -6,7 +6,7 @@ use crate::{
     dto::add_article_score_dto::AddArticleScoreDTO, model::article_score_entry::ArticleScoreEntry,
 };
 #[instrument]
-pub async fn add_article_score<'e, E>(
+pub async fn article_score_dao_add_article_score<'e, E>(
     executor: E,
     article_score: AddArticleScoreDTO,
 ) -> Result<u64, CustomError>
@@ -38,7 +38,7 @@ where
 }
 
 #[instrument]
-pub async fn get_article_score<'e, E>(
+pub async fn article_score_dao_get_article_score<'e, E>(
     executor: E,
     account: &str,
     article_id: &str,
@@ -71,7 +71,7 @@ where
 }
 
 #[instrument]
-pub async fn page<'e, E>(
+pub async fn article_score_dao_page<'e, E>(
     executor: E,
     article_id: &str,
     from: u32,
@@ -108,7 +108,7 @@ where
 }
 
 #[instrument]
-pub async fn get_count_by_account<'e, E>(executor: E, article_id: &str) -> Result<i64, CustomError>
+pub async fn article_score_dao_get_count_by_account<'e, E>(executor: E, article_id: &str) -> Result<i64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {
@@ -136,7 +136,7 @@ where
 }
 
 #[instrument]
-pub async fn get_average_score_by_article_id<'e, E>(
+pub async fn article_score_dao_get_average_score_by_article_id<'e, E>(
     executor: E,
     article_id: &str,
 ) -> Result<f64, CustomError>
