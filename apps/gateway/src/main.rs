@@ -105,20 +105,10 @@ async fn handle_get_token_info(req: axum::http::Request<Body>) -> axum::response
     }
     match token_payload_option {
         Some(token_payload) => {
-            server_common::response::axum_response(
-                Ok(token_payload),
-                content_type_json_header(),
-            )
+            server_common::response::axum_response(Ok(token_payload), content_type_json_header())
         }
-        None => {
-            server_common::response::axum_response(
-                Ok(""),
-                content_type_json_header(),
-            )
-        }
+        None => server_common::response::axum_response(Ok(""), content_type_json_header()),
     }
-
-
 }
 
 async fn proxy_handler(

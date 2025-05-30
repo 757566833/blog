@@ -6,7 +6,6 @@ pub const TEXT_PLAIN: &str = "text/plain; charset=UTF-8";
 pub const CURRENT_VERSION: i64 = 1;
 pub const DEFAULT_CONFIG_ID: i64 = 1;
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ESSearchResult<T> {
     pub took: u64,
@@ -22,7 +21,7 @@ pub struct ESAnalyzeSearchResult<T, A> {
     pub hits: ESHitsAnalyze<T, A>,
 }
 
-#[derive(Debug, Serialize, Deserialize,Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ESShards {
     pub total: u32,
     pub successful: u32,
@@ -151,7 +150,6 @@ pub struct ESError {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ESBatchByIdsDelItem {
-
     pub _index: String,
     pub _id: String,
     pub _version: i128,
@@ -174,14 +172,11 @@ pub struct ESBatchByIdsDelResponse {
     pub items: Vec<ESBatchByIdsDelIGroup>,
 }
 
-
-
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ESCountResponse {
     pub count: u64,
     pub _shards: ESShards,
 }
-
 
 #[typeshare]
 #[derive(Debug, Deserialize, Serialize, Clone)]

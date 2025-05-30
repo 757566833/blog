@@ -10,7 +10,10 @@ use crate::{
     model::account_entry::AccountEntry,
 };
 #[instrument]
-pub async fn account_dao_add_account<'e, E>(executor: E, account: AddAccountDto) -> Result<u64, CustomError>
+pub async fn account_dao_add_account<'e, E>(
+    executor: E,
+    account: AddAccountDto,
+) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {
@@ -39,7 +42,10 @@ where
 }
 
 #[instrument]
-pub async fn account_dao_update_account<'e, E>(executor: E, account: EditAccountDto) -> Result<u64, CustomError>
+pub async fn account_dao_update_account<'e, E>(
+    executor: E,
+    account: EditAccountDto,
+) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {

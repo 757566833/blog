@@ -1,5 +1,5 @@
 use chrono::Utc;
-use server_common::{error::CustomError};
+use server_common::error::CustomError;
 use tracing::instrument;
 
 #[instrument]

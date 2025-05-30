@@ -1,16 +1,12 @@
 use std::collections::HashSet;
 
 use axum::http::{HeaderMap, HeaderName};
-use opentelemetry::{
-    trace::TraceContextExt, KeyValue
-};
+use opentelemetry::{KeyValue, trace::TraceContextExt};
 use serde::de::DeserializeOwned;
-use tracing::{instrument, Span};
+use tracing::{Span, instrument};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
-use crate::{
-    constant::UTF_8_JSON, error::CustomError, macro_log_error, response::empty_response
-};
+use crate::{constant::UTF_8_JSON, error::CustomError, macro_log_error, response::empty_response};
 
 pub fn reqwest_response_to_axum_response(
     reqwest_response: reqwest::Response,
@@ -23,7 +19,7 @@ pub fn reqwest_response_to_axum_response(
         *status_ref = reqwest_response.status();
         response = response_origin;
     } else {
-        response = empty_response(reqwest_response.status(),None);
+        response = empty_response(reqwest_response.status(), None);
     }
     let headers = reqwest_response.headers();
     let headers_ref = response.headers_mut();
@@ -64,8 +60,8 @@ pub async fn json_request_wrapper<T>(
 where
     T: DeserializeOwned,
 {
-    let cx  = Span::current().context();
-     let otel_span = cx.span(); // op
+    let cx = Span::current().context();
+    let otel_span = cx.span(); // op
     let mut builder = client.request(method.clone(), url);
 
     if let Some(h) = headers {
@@ -79,19 +75,14 @@ where
     }
 
     let request = builder.build().map_err(|error| {
-        let custom_error = CustomError::HTTP(format!(
-            "http request build error: {}",
-            error.to_string(),
-        ));
+        let custom_error =
+            CustomError::HTTP(format!("http request build error: {}", error.to_string(),));
         macro_log_error!(custom_error);
         return custom_error;
     })?;
 
     let response = client.execute(request).await.map_err(|error| {
-        let custom_error = CustomError::HTTP(format!(
-            "http execute error: {}",
-            error.to_string(),
-        ));
+        let custom_error = CustomError::HTTP(format!("http execute error: {}", error.to_string(),));
         macro_log_error!(custom_error);
         return custom_error;
     })?;

@@ -3,7 +3,10 @@ use crate::{
     db::init_db,
     middleware::{extension::with_extension, log::with_log_tracer},
 };
-use axum::{middleware, routing::{get, post}, Extension, Router};
+use axum::{
+    Extension, Router, middleware,
+    routing::{get, post},
+};
 
 #[derive(Clone)]
 pub struct AuthAppState {
@@ -19,7 +22,10 @@ pub struct AuthAppExtension {
 pub async fn init_route() -> Router {
     let reqwest_client = reqwest::Client::new();
     let db_pool = init_db().await;
-    let state = AuthAppState { reqwest_client ,db_pool};
+    let state = AuthAppState {
+        reqwest_client,
+        db_pool,
+    };
 
     let app: Router = Router::new()
         .route("/api/test", get(controller::test::get))

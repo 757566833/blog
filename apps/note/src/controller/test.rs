@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 use server_common::{fetch::content_type_json_header, response::axum_response};
 
 use crate::{
-    middleware::log::get_tracer,  route::{NoteAppExtension, NoteAppState}, service
+    middleware::log::get_tracer,
+    route::{NoteAppExtension, NoteAppState},
+    service,
 };
 
 #[derive(Deserialize, Serialize)]
@@ -27,5 +29,5 @@ pub async fn get(
         .with_kind(SpanKind::Internal)
         .start(tracer);
     let result = service::test::get(_state.reqwest_client, "".to_string()).await;
-    return axum_response(result,content_type_json_header());
+    return axum_response(result, content_type_json_header());
 }

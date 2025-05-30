@@ -108,7 +108,10 @@ where
 }
 
 #[instrument]
-pub async fn article_score_dao_get_count_by_account<'e, E>(executor: E, article_id: &str) -> Result<i64, CustomError>
+pub async fn article_score_dao_get_count_by_account<'e, E>(
+    executor: E,
+    article_id: &str,
+) -> Result<i64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {

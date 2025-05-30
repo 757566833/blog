@@ -1,4 +1,7 @@
-use crate::{dto::{add_user_dto::AddUserDto, edit_user_dto::EditUserDto}, model::user_entry::UserEntry};
+use crate::{
+    dto::{add_user_dto::AddUserDto, edit_user_dto::EditUserDto},
+    model::user_entry::UserEntry,
+};
 use server_common::{error::CustomError, macro_log_error};
 use sqlx::{Executor, Postgres, postgres::PgPool};
 use tracing::instrument;

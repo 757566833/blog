@@ -84,4 +84,3 @@ pub fn extract_info_from_custom_error(error: CustomError) -> ErrorInfo {
         },
     }
 }
-

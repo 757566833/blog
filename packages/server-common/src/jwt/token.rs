@@ -29,7 +29,7 @@ pub fn parse_token(token: String) -> Result<TokenPayload, CustomError> {
                 "parse token error"
             ));
             macro_log_error!(custom_error);
-           return custom_error;
+            return custom_error;
         })?;
     // let exp_result = parse_result.map(|claims| claims.claims.exp);
     let data = claims.claims;
@@ -39,7 +39,6 @@ pub fn parse_token(token: String) -> Result<TokenPayload, CustomError> {
     if now < exp {
         return Ok(TokenPayload {
             account: data.account,
-      
         });
     } else {
         let custom_error = CustomError::JWT(format!("token expired"));

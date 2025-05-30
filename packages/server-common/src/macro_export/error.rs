@@ -1,5 +1,3 @@
-
-
 #[macro_export]
 macro_rules! macro_log_error {
     ($err:expr) => {
@@ -19,7 +17,6 @@ macro_rules! macro_log_error {
         );
     };
 }
-
 
 #[macro_export]
 macro_rules! macro_panic_log_error {

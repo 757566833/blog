@@ -29,8 +29,12 @@ pub async fn login(
         .span_builder("user login controller")
         .with_kind(SpanKind::Internal)
         .start(tracer);
-    let result =
-        service::user_service::user_service_login(&state.db_pool, payload.account, payload.password).await;
+    let result = service::user_service::user_service_login(
+        &state.db_pool,
+        payload.account,
+        payload.password,
+    )
+    .await;
     let token = result.unwrap_or("".to_string());
     let token_value_result = axum::http::HeaderValue::from_str(&format!(
         "{}={}; sameSite=strict; path=/; httpOnly=true; max-age=604800",

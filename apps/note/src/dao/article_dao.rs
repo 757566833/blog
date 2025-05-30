@@ -1,10 +1,16 @@
 use chrono::Utc;
 use serde_json::json;
-use server_common::{constant::{ESAnalyzeSearchResult, ESDetail, ESHitsAnalyze, ESInsertOrUpdateResponse}, error::CustomError, fetch::json_request_wrapper};
+use server_common::{
+    constant::{ESAnalyzeSearchResult, ESDetail, ESHitsAnalyze, ESInsertOrUpdateResponse},
+    error::CustomError,
+    fetch::json_request_wrapper,
+};
 use tracing::instrument;
 
 use crate::{
-    dto::add_article_dto::AddArticleDTO, env::Environment, model::article_model::{ESAnalyzeArticleHighlight, ESArticleEntry}
+    dto::add_article_dto::AddArticleDTO,
+    env::Environment,
+    model::article_model::{ESAnalyzeArticleHighlight, ESArticleEntry},
 };
 
 #[instrument]
@@ -20,38 +26,38 @@ pub async fn article_dao_page(
     let document;
     if !analyze_keyword.is_empty() {
         document = json!({
-        "query": {
-            "bool": {
-                "should": [
-                    {
-                        "match": {
-                            "title": analyze_keyword
+            "query": {
+                "bool": {
+                    "should": [
+                        {
+                            "match": {
+                                "title": analyze_keyword
+                            }
+                        },
+                        {
+                            "match": {
+                                "content": analyze_keyword
+                            }
                         }
-                    },
-                    {
-                        "match": {
-                            "content": analyze_keyword
-                        }
-                    }
-                ],
-            }
-        },
-        "highlight": {
-            "fields": {
-                "title": {},
-                "content": {}
-            }
-        },
-        "sort": [
-            {
-                "create_time": {
-                    "order": create_time_sort
+                    ],
                 }
-            }
-        ],
-        "from": from,
-        "size": size
-    })
+            },
+            "highlight": {
+                "fields": {
+                    "title": {},
+                    "content": {}
+                }
+            },
+            "sort": [
+                {
+                    "create_time": {
+                        "order": create_time_sort
+                    }
+                }
+            ],
+            "from": from,
+            "size": size
+        })
         .to_string();
     } else {
         document = json!({
@@ -86,9 +92,11 @@ pub async fn article_dao_page(
     return Ok(json.hits);
 }
 
-
 #[instrument]
-pub async fn article_dao_add(reqwest_client: reqwest::Client, data: AddArticleDTO) -> Result<String, CustomError> {
+pub async fn article_dao_add(
+    reqwest_client: reqwest::Client,
+    data: AddArticleDTO,
+) -> Result<String, CustomError> {
     let current_timestamp_millis = Utc::now().timestamp_millis();
     let add_item = ESArticleEntry {
         title: data.title,

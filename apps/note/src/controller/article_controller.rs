@@ -34,8 +34,14 @@ pub async fn article_page(
     let page_size = params.page_size.unwrap_or(10);
     let from = (page - 1) * page_size;
     let analyze = params.analyze;
-    let response =
-        service::article_service::article_service_page(state.reqwest_client, None, from, page_size, analyze).await;
+    let response = service::article_service::article_service_page(
+        state.reqwest_client,
+        None,
+        from,
+        page_size,
+        analyze,
+    )
+    .await;
 
     return axum_response(response, content_type_json_header());
 }

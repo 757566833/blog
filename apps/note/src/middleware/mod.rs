@@ -1,2 +1,2 @@
-pub mod log;
 pub mod extension;
+pub mod log;

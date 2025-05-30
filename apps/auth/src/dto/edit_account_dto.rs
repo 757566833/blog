@@ -1,4 +1,3 @@
-
 #[derive(Debug)]
 pub struct EditAccountDto {
     pub id: String,

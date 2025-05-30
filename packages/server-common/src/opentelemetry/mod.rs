@@ -1,15 +1,15 @@
 use opentelemetry::global;
+use opentelemetry::trace::TracerProvider;
 use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_otlp::{LogExporter, MetricExporter, Protocol, SpanExporter, WithExportConfig};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::{
     Resource, logs::SdkLoggerProvider, metrics::SdkMeterProvider, trace::SdkTracerProvider,
 };
-use tracing_opentelemetry::OpenTelemetryLayer;
 use std::sync::OnceLock;
+use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::prelude::*;
-use opentelemetry::trace::TracerProvider;
 
 fn get_resource(server_name: &str) -> Resource {
     static RESOURCE: OnceLock<Resource> = OnceLock::new();
@@ -132,13 +132,16 @@ pub fn init_opentelemetry(
         tracing_subscriber::registry()
             .with(otel_log_layer)
             .with(fmt_layer)
-            .with(otel_tracer_layer)   
+            .with(otel_tracer_layer)
             .init();
     }
     #[cfg(not(debug_assertions))]
     {
         // release 构建，不加 fmt_layer
-        tracing_subscriber::registry().with(otel_log_layer).with(otel_tracer_layer).init();
+        tracing_subscriber::registry()
+            .with(otel_log_layer)
+            .with(otel_tracer_layer)
+            .init();
     }
 
     return (logger_provider, tracer_provider, meter_provider);

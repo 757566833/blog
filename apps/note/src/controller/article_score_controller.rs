@@ -34,9 +34,13 @@ pub async fn article_score_page(
     let page_size = params.page_size.unwrap_or(10);
     let from = (page - 1) * page_size;
     let article_id = params.article_id;
-    let response =
-        service::article_score_service::article_score_service_page(&state.postgres_db_pool, from, page_size, &article_id)
-            .await;
+    let response = service::article_score_service::article_score_service_page(
+        &state.postgres_db_pool,
+        from,
+        page_size,
+        &article_id,
+    )
+    .await;
 
     return axum_response(response, content_type_json_header());
 }
@@ -66,7 +70,9 @@ pub async fn add_article_score(
         score: params.score,
         comment: params.comment,
     };
-    let response = service::article_score_service::article_score_service_add(&state.postgres_db_pool, dto).await;
+    let response =
+        service::article_score_service::article_score_service_add(&state.postgres_db_pool, dto)
+            .await;
 
     return axum_response(response, content_type_json_header());
 }
@@ -83,7 +89,11 @@ pub async fn get_article_score_average(
         .start(tracer);
 
     let response =
-        service::article_score_service::article_score_service_get_average_score_by_article_id(&state.postgres_db_pool, &id).await;
+        service::article_score_service::article_score_service_get_average_score_by_article_id(
+            &state.postgres_db_pool,
+            &id,
+        )
+        .await;
 
     return axum_response(response, content_type_json_header());
 }

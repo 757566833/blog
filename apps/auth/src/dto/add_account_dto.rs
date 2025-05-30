@@ -1,4 +1,3 @@
-
 #[derive(Debug)]
 pub struct AddAccountDto {
     pub account: String,
