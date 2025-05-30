@@ -1,6 +1,4 @@
-use server_common::
-    error::{CustomError, log_error}
-;
+use server_common::{error::CustomError, macro_log_error};
 use sqlx::{Executor, Postgres};
 
 use crate::{
@@ -27,11 +25,13 @@ where
     .execute(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "insert article_score error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     return Ok(result.rows_affected());
 }
@@ -57,11 +57,13 @@ where
     .fetch_optional(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "get article_score error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
 
     Ok(result)
@@ -92,21 +94,20 @@ where
     .fetch_all(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "page article_score error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
 
     Ok(result)
 }
 
 // get count of article scores by account
-pub async fn get_count_by_account<'e, E>(
-    executor: E,
-    article_id: &str,
-) -> Result<i64, CustomError>
+pub async fn get_count_by_account<'e, E>(executor: E, article_id: &str) -> Result<i64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
 {
@@ -121,11 +122,13 @@ where
     .fetch_one(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "get count by article_id error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
 
     Ok(result)
@@ -150,11 +153,13 @@ where
     .fetch_one(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
-            "get sum score by article_id error"
-        )))
+            "get average score by article_id error"
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
 
     Ok(result.unwrap_or(0.0))

@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { ESArticleEntry, ESAnalyzeArticleHighlight, AddArticleRequest, ArticleScoreEntry, AddArticleScoreRequest } from "@workspace/ui/types/note";
 
 import useSWR from "swr";
-import { DBPageResponse } from "@workspace/ui/types/server_common";
+import { DBPageResponse, TokenPayload } from "@workspace/ui/types/server_common";
 export interface Response<T> {
   code: number;
   data: T;
@@ -195,9 +195,9 @@ export const logout = async () => {
 export const useLogout = () => {
   return useLoading(logout)
 }
-export const useUserInfo = () => {
-  return useSWR<UserEntry | undefined>(
-    "/api/auth/v1/user/info",
+export const useTokenInfo = () => {
+  return useSWR<TokenPayload | undefined>(
+    "/api/gateway/v1/token/info",
     fetcher,
   );
 }
@@ -308,4 +308,11 @@ export const addArticleScore = async (data?: AddArticleScoreRequest) => {
 }
 export const useAddArticleScore = () => {
   return useLoading(addArticleScore)
+}
+
+export const useUserInfo = () => {
+  return useSWR<UserEntry | undefined>(
+    "/api/auth/v1/user/info",
+    fetcher,
+  );
 }

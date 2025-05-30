@@ -1,13 +1,19 @@
 use std::sync::Arc;
 
-use axum::{Router, body::Body, http::HeaderValue, middleware, routing::any};
+use axum::{
+    Router,
+    body::Body,
+    http::HeaderValue,
+    middleware,
+    routing::{any, get},
+};
 use env::Environment;
 use opentelemetry::{
     KeyValue, global,
     trace::{SpanKind, TraceContextExt, Tracer},
 };
 use opentelemetry_http::HeaderInjector;
-use server_common::constant::TEXT_PLAIN;
+use server_common::{constant::TEXT_PLAIN, fetch::content_type_json_header};
 use tokio::signal;
 use tracing::{Level, error, span};
 use uuid::Uuid;
@@ -37,6 +43,7 @@ async fn main() {
             "/{*path}",
             any(move |request| proxy_handler(request, client.clone())),
         )
+        .route("/gateway/v1/token/info", get(handle_get_token_info))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             add_gateway_header,
@@ -66,6 +73,52 @@ async fn main() {
     } else {
         println!("http server bind error");
     }
+}
+
+async fn handle_get_token_info(req: axum::http::Request<Body>) -> axum::response::Response {
+    let default_account = HeaderValue::from_static("");
+    let authorization = req
+        .headers()
+        .get(axum::http::header::COOKIE)
+        .unwrap_or(&default_account)
+        .to_str()
+        .unwrap_or("");
+    let mut token_payload_option = None;
+    if !authorization.is_empty() {
+        let cookies = authorization.split(";");
+        let mut bearer_token = "".to_string();
+        for cookie in cookies {
+            if let Some((k, v)) = cookie.split_once('=') {
+                if k.trim() == Environment::get_cookie_key() {
+                    bearer_token = v.to_string();
+                    break;
+                }
+            }
+        }
+        if !bearer_token.is_empty() {
+            let token = bearer_token.trim_start_matches("Bearer ");
+            let token_payload_result = server_common::jwt::token::parse_token(token.to_string());
+            if let Ok(t) = token_payload_result {
+                token_payload_option = Some(t);
+            }
+        }
+    }
+    match token_payload_option {
+        Some(token_payload) => {
+            server_common::response::axum_response(
+                Ok(token_payload),
+                content_type_json_header(),
+            )
+        }
+        None => {
+            server_common::response::axum_response(
+                Ok(""),
+                content_type_json_header(),
+            )
+        }
+    }
+
+
 }
 
 async fn proxy_handler(
@@ -172,7 +225,6 @@ static WHITELIST: [&'static str; 5] = [
 ];
 
 fn is_whitelisted(path: &str) -> bool {
-  
     for rule in WHITELIST.iter() {
         if rule.ends_with("/*") {
             let prefix = &rule[..rule.len() - 1]; // remove '*'
@@ -198,12 +250,12 @@ async fn add_gateway_header(
     let method = req.method();
     let req_header = req.headers();
 
-    let default_uid = HeaderValue::from_static("");
+    let default_account = HeaderValue::from_static("");
 
     let authorization = req
         .headers()
         .get(axum::http::header::COOKIE)
-        .unwrap_or(&default_uid)
+        .unwrap_or(&default_account)
         .to_str()
         .unwrap_or("");
     let mut token_payload_option = None;

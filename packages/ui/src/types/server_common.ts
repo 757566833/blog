@@ -8,3 +8,7 @@ export interface DBPageResponse<T> {
 	total: number;
 }
 
+export interface TokenPayload {
+	account: string;
+}
+

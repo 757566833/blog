@@ -1,4 +1,4 @@
-use server_common::error::{CustomError, log_error};
+use server_common::{error::CustomError, macro_log_error};
 use sqlx::{Executor, Postgres};
 
 use crate::{
@@ -26,11 +26,13 @@ where
     .execute(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "insert account error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     return Ok(result.rows_affected());
 }
@@ -53,11 +55,13 @@ where
     .execute(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "update account error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     return Ok(result.rows_affected());
 }
@@ -78,11 +82,13 @@ pub async fn get_account(
     .fetch_optional(pool)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "get account error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
 
     let id;
@@ -110,11 +116,13 @@ pub async fn get_account_count(
     .fetch_one(pool)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "get account count error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
 
     return Ok(result);
@@ -135,11 +143,13 @@ pub async fn get_account_by_account(
     .fetch_optional(pool)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "get account by account error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
 
     return Ok(result);

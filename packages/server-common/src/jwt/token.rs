@@ -1,9 +1,11 @@
 use chrono::Utc;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
-use crate::error::{CustomError, log_error};
+use crate::{error::CustomError, macro_log_error};
 
+#[typeshare]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TokenPayload {
     pub account: String,
@@ -21,11 +23,13 @@ pub fn parse_token(token: String) -> Result<TokenPayload, CustomError> {
 
     let claims = jsonwebtoken::decode::<Claims>(&token, &decoding_key, &Validation::default())
         .map_err(|error| {
-            log_error(CustomError::JWT(format!(
+            let custom_error = CustomError::JWT(format!(
                 "JWT: {},{}",
                 error.to_string(),
                 "parse token error"
-            )))
+            ));
+            macro_log_error!(custom_error);
+           return custom_error;
         })?;
     // let exp_result = parse_result.map(|claims| claims.claims.exp);
     let data = claims.claims;
@@ -38,7 +42,9 @@ pub fn parse_token(token: String) -> Result<TokenPayload, CustomError> {
       
         });
     } else {
-        return Err(log_error(CustomError::JWT(format!("token expired"))));
+        let custom_error = CustomError::JWT(format!("token expired"));
+        macro_log_error!(custom_error);
+        return Err(custom_error);
     }
 }
 
@@ -53,11 +59,13 @@ pub fn generate_token(payload: TokenPayload) -> Result<String, CustomError> {
     let encoding_key = EncodingKey::from_secret(SECRET.as_bytes());
     let token = jsonwebtoken::encode(&Header::new(Algorithm::HS256), &claims, &encoding_key)
         .map_err(|error| {
-            log_error(CustomError::JWT(format!(
+            let custom_error = CustomError::JWT(format!(
                 "JWT: {},{}",
                 error.to_string(),
                 "generate token error"
-            )))
+            ));
+            macro_log_error!(custom_error);
+            return custom_error;
         })?;
     return Ok(token);
 }

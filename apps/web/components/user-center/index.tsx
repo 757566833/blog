@@ -1,5 +1,5 @@
 "use client"
-import { useLogout, useUserInfo } from "@/service";
+import { useLogout, useTokenInfo } from "@/service";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 import { Button } from "@workspace/ui/components/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuShortcut, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu";
@@ -11,7 +11,7 @@ import { memo, useMemo } from "react";
 
 
 const Base = () => {
-  const { data, isValidating } = useUserInfo();
+  const { data, isValidating } = useTokenInfo();
   console.log(data)
 
   const avatar = useMemo(() => {

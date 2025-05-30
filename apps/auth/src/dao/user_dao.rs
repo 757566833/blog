@@ -1,5 +1,5 @@
 use crate::{dto::{add_user_dto::AddUserDto, edit_user_dto::EditUserDto}, model::user_entry::UserEntry};
-use server_common::error::{CustomError, log_error};
+use server_common::{error::CustomError, macro_log_error};
 use sqlx::{Executor, Postgres, postgres::PgPool};
 
 // 根据add_user_dto 生成对应的用户添加方法
@@ -20,11 +20,13 @@ where
     .execute(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "insert user error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     return Ok(result.rows_affected());
 }
@@ -47,11 +49,13 @@ where
     .execute(executor)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "update user error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     return Ok(result.rows_affected());
 }
@@ -72,11 +76,13 @@ pub async fn get_user_by_account(
     .fetch_optional(pool)
     .await
     .map_err(|error| {
-        log_error(CustomError::Postgres(format!(
+        let custom_error = CustomError::Postgres(format!(
             "postgres error: {},{}",
             error.to_string(),
             "get user by account error"
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     return Ok(result);
 }

@@ -8,9 +8,7 @@ use opentelemetry::{
 use serde::de::DeserializeOwned;
 
 use crate::{
-    constant::UTF_8_JSON,
-    error::{CustomError, log_error},
-    response::empty_response,
+    constant::UTF_8_JSON, error::CustomError, macro_log_error, response::empty_response
 };
 
 pub fn reqwest_response_to_axum_response(
@@ -84,40 +82,50 @@ where
     }
 
     let request = builder.build().map_err(|error| {
-        log_error(CustomError::HTTP(format!(
+        let custom_error = CustomError::HTTP(format!(
             "http request build error: {}",
             error.to_string(),
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
 
     let response = client.execute(request).await.map_err(|error| {
-        log_error(CustomError::HTTP(format!(
+        let custom_error = CustomError::HTTP(format!(
             "http execute error: {}",
             error.to_string(),
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     let status = response.status();
     span.set_attribute(KeyValue::new("response.status", status.to_string()));
     let text = response.text().await.map_err(|error| {
-        log_error(CustomError::HTTP(format!(
+        let custom_error = CustomError::HTTP(format!(
             "http response to string error: {}",
             error.to_string(),
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     span.set_attribute(KeyValue::new("response.body", text.clone()));
     if status.as_u16() >= 300 {
-        return Err(log_error(CustomError::HTTP(format!(
-            "request url {} status: {},{}",
-            url.to_string(),
-            status,
+        let custom_error = CustomError::HTTP(format!(
+            "http request error: {},{}",
+            status.to_string(),
             text.clone()
-        ))));
+        ));
+        macro_log_error!(custom_error);
+
+        return Err(custom_error);
     }
     let json = serde_json::from_str::<T>(&text).map_err(|error| {
-        log_error(CustomError::HTTP(format!(
-            "http response string to json  error: {}",
+        let custom_error = CustomError::JSON(format!(
+            "http response string to json error: {}",
             error.to_string(),
-        )))
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
     })?;
     return Ok(json);
 }

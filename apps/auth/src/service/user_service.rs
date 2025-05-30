@@ -4,8 +4,8 @@ use bcrypt::DEFAULT_COST;
 use chrono::Utc;
 use opentelemetry::trace::{SpanKind, Tracer};
 use server_common::{
-    error::{CustomError, log_error},
-    jwt::token::TokenPayload,
+    error::CustomError,
+    jwt::token::TokenPayload, macro_log_error,
 };
 use sqlx::{Postgres, Transaction};
 
@@ -31,38 +31,48 @@ pub async fn login(
     if let Some(account) = option_account {
         let hashed = account.password_hash.clone();
        let is_valid =  bcrypt::verify(password, &hashed).map_err(|error| {
-            log_error(CustomError::Service(format!(
-                "bcrypt verify error: {},{}",
-                error.to_string(),
-                "verify password error"
-            )))
-        })?;
-        if is_valid {
-            // 密码验证成功，生成JWT令牌
-            let token = server_common::jwt::token::generate_token(TokenPayload {
-                account: account.account.clone(),
+        let custom_error = CustomError::Service(format!(
+            "bcrypt verify error: {},{}",
+            error.to_string(),
+            "verify password error"
+        ));
+        macro_log_error!(custom_error);
+        return custom_error;
+    })?;
+    if is_valid {
+        // 密码验证成功，生成JWT令牌
+        let token = server_common::jwt::token::generate_token(TokenPayload {
+            account: account.account.clone(),
             })?;
             return Ok(token);
         } else {
             // 密码验证失败
-            return Err(log_error(CustomError::Service(
+            let custom_error = CustomError::Service(
                 "Invalid account or password".to_string(),
-            )));
+            );
+            macro_log_error!(custom_error);
+            return Err(custom_error);
         }
     } else {
         let hashed = bcrypt::hash(password, DEFAULT_COST).map_err(|error| {
-            log_error(CustomError::Service(format!(
+            let custom_error = CustomError::Service(format!(
                 "bcrypt hash error: {},{}",
                 error.to_string(),
                 "hash password error"
-            )))
+            ));
+            macro_log_error!(custom_error);
+            return custom_error;
+            
         })?;
         let mut tx: Transaction<'_, Postgres> = pool.begin().await.map_err(|error| {
-            log_error(CustomError::Postgres(format!(
+            // 开启事务失败
+            let custom_error = CustomError::Postgres(format!(
                 "postgres error: {},{}",
                 error.to_string(),
                 "begin transaction error"
-            )))
+            ));
+            macro_log_error!(custom_error);
+            return custom_error;
         })?;
         let add_account = dto::add_account_dto::AddAccountDto {
             account: account.clone(),
@@ -79,11 +89,14 @@ pub async fn login(
         if add_account_id > 0 && add_user_id > 0 {
             // 提交事务
             tx.commit().await.map_err(|error| {
-                log_error(CustomError::Postgres(format!(
+                // 提交事务失败
+                let custom_error = CustomError::Postgres(format!(
                     "postgres error: {},{}",
                     error.to_string(),
                     "commit transaction error"
-                )))
+                ));
+                macro_log_error!(custom_error);
+                return custom_error;
             })?;
         }
         let token = server_common::jwt::token::generate_token(TokenPayload {

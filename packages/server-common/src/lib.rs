@@ -2,6 +2,7 @@ pub mod constant;
 pub mod error;
 pub mod fetch;
 pub mod jwt;
+pub mod macro_export;
 pub mod opentelemetry;
 pub mod response;
 

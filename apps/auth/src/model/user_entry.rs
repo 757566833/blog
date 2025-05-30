@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 #[typeshare]
-#[derive(sqlx::FromRow,Deserialize, Serialize)]
+#[derive(sqlx::FromRow, Deserialize, Serialize)]
 pub struct UserEntry {
     #[typeshare(serialized_as = "String")]
     pub id: uuid::Uuid,
@@ -16,7 +16,7 @@ pub struct UserEntry {
     pub update_time: DateTime<Utc>,
 }
 
-#[derive(sqlx::FromRow,Deserialize, Serialize)]
+#[derive(sqlx::FromRow, Deserialize, Serialize)]
 pub struct OptionUserEntry {
     pub id: Option<uuid::Uuid>,
     pub account: Option<String>,
