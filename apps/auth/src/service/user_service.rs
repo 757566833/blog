@@ -1,55 +1,41 @@
-// 生成一个注册的方法
-
 use bcrypt::DEFAULT_COST;
 use chrono::Utc;
-use opentelemetry::trace::{SpanKind, Tracer};
-use server_common::{
-    error::CustomError,
-    jwt::token::TokenPayload, macro_log_error,
-};
+use server_common::{error::CustomError, jwt::token::TokenPayload, macro_log_error};
 use sqlx::{Postgres, Transaction};
+use tracing::instrument;
 
 use crate::{
     dao::{account_dao, user_dao},
     dto,
-    middleware::log::get_tracer, model::user_entry::UserEntry,
+    model::user_entry::UserEntry,
 };
-
-pub async fn login(
+#[instrument]
+pub async fn user_service_login(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: String,
     password: String,
 ) -> Result<String, CustomError> {
-    // 开启事务
-    let tracer = get_tracer();
-    let mut _span = tracer
-        .span_builder("user login service")
-        .with_kind(SpanKind::Internal)
-        .start(tracer);
-
     let option_account = account_dao::get_account_by_account(pool, &account).await?;
     if let Some(account) = option_account {
         let hashed = account.password_hash.clone();
-       let is_valid =  bcrypt::verify(password, &hashed).map_err(|error| {
-        let custom_error = CustomError::Service(format!(
-            "bcrypt verify error: {},{}",
-            error.to_string(),
-            "verify password error"
-        ));
-        macro_log_error!(custom_error);
-        return custom_error;
-    })?;
-    if is_valid {
-        // 密码验证成功，生成JWT令牌
-        let token = server_common::jwt::token::generate_token(TokenPayload {
-            account: account.account.clone(),
+        let is_valid = bcrypt::verify(password, &hashed).map_err(|error| {
+            let custom_error = CustomError::Service(format!(
+                "bcrypt verify error: {},{}",
+                error.to_string(),
+                "verify password error"
+            ));
+            macro_log_error!(custom_error);
+            return custom_error;
+        })?;
+        if is_valid {
+            // 密码验证成功，生成JWT令牌
+            let token = server_common::jwt::token::generate_token(TokenPayload {
+                account: account.account.clone(),
             })?;
             return Ok(token);
         } else {
             // 密码验证失败
-            let custom_error = CustomError::Service(
-                "Invalid account or password".to_string(),
-            );
+            let custom_error = CustomError::Service("Invalid account or password".to_string());
             macro_log_error!(custom_error);
             return Err(custom_error);
         }
@@ -62,7 +48,6 @@ pub async fn login(
             ));
             macro_log_error!(custom_error);
             return custom_error;
-            
         })?;
         let mut tx: Transaction<'_, Postgres> = pool.begin().await.map_err(|error| {
             // 开启事务失败
@@ -104,33 +89,18 @@ pub async fn login(
         })?;
         return Ok(token);
     }
-   
 }
 
-// info
-pub async fn info(
+#[instrument]
+pub async fn user_service_info(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: String,
 ) -> Result<Option<UserEntry>, CustomError> {
-    let tracer = get_tracer();
-    let mut _span = tracer
-        .span_builder("user info service")
-        .with_kind(SpanKind::Internal)
-        .start(tracer);
-
     let user: Option<UserEntry> = user_dao::get_user_by_account(pool, &account).await?;
     return Ok(user);
 }
-
-pub async fn logout(
-    _pool: &sqlx::Pool<sqlx::Postgres>,
-) -> Result<i64, CustomError> {
-    let tracer = get_tracer();
-    let mut _span = tracer
-        .span_builder("user logout service")
-        .with_kind(SpanKind::Internal)
-        .start(tracer);
-
+#[instrument]
+pub async fn user_service_logout(_pool: &sqlx::Pool<sqlx::Postgres>) -> Result<i64, CustomError> {
     let current_timestamp_millis = Utc::now().timestamp_millis();
     return Ok(current_timestamp_millis);
 }

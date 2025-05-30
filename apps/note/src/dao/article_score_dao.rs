@@ -1,10 +1,11 @@
 use server_common::{error::CustomError, macro_log_error};
 use sqlx::{Executor, Postgres};
+use tracing::instrument;
 
 use crate::{
     dto::add_article_score_dto::AddArticleScoreDTO, model::article_score_entry::ArticleScoreEntry,
 };
-
+#[instrument]
 pub async fn add_article_score<'e, E>(
     executor: E,
     article_score: AddArticleScoreDTO,
@@ -36,7 +37,7 @@ where
     return Ok(result.rows_affected());
 }
 
-// get article score by account and article_id
+#[instrument]
 pub async fn get_article_score<'e, E>(
     executor: E,
     account: &str,
@@ -69,7 +70,7 @@ where
     Ok(result)
 }
 
-//  page article scores
+#[instrument]
 pub async fn page<'e, E>(
     executor: E,
     article_id: &str,
@@ -106,7 +107,7 @@ where
     Ok(result)
 }
 
-// get count of article scores by account
+#[instrument]
 pub async fn get_count_by_account<'e, E>(executor: E, article_id: &str) -> Result<i64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
@@ -134,7 +135,7 @@ where
     Ok(result)
 }
 
-// get average score by article_id
+#[instrument]
 pub async fn get_average_score_by_article_id<'e, E>(
     executor: E,
     article_id: &str,

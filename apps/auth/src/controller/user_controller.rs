@@ -30,7 +30,7 @@ pub async fn login(
         .with_kind(SpanKind::Internal)
         .start(tracer);
     let result =
-        service::user_service::login(&state.db_pool, payload.account, payload.password).await;
+        service::user_service::user_service_login(&state.db_pool, payload.account, payload.password).await;
     let token = result.unwrap_or("".to_string());
     let token_value_result = axum::http::HeaderValue::from_str(&format!(
         "{}={}; sameSite=strict; path=/; httpOnly=true; max-age=604800",
@@ -62,7 +62,7 @@ pub async fn logout(
         .span_builder("user logout controller")
         .with_kind(SpanKind::Internal)
         .start(tracer);
-    let _ = service::user_service::logout(&state.db_pool).await;
+    let _ = service::user_service::user_service_logout(&state.db_pool).await;
     let token = "".to_string();
     let token_value_result = axum::http::HeaderValue::from_str(&format!(
         "{}=\"\"; sameSite=strict; path=/; httpOnly=true; max-age=1",
@@ -93,7 +93,7 @@ pub async fn info(
         .span_builder("user info controller")
         .with_kind(SpanKind::Internal)
         .start(tracer);
-    let result = service::user_service::info(&state.db_pool, ext.account).await;
+    let result = service::user_service::user_service_info(&state.db_pool, ext.account).await;
 
     return axum_response(result, content_type_json_header());
 }

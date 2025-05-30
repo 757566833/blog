@@ -2,10 +2,11 @@ use std::collections::HashSet;
 
 use axum::http::{HeaderMap, HeaderName};
 use opentelemetry::{
-    KeyValue,
-    trace::{Span, SpanKind, Tracer},
+    trace::TraceContextExt, KeyValue
 };
 use serde::de::DeserializeOwned;
+use tracing::{instrument, Span};
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::{
     constant::UTF_8_JSON, error::CustomError, macro_log_error, response::empty_response
@@ -52,11 +53,10 @@ pub fn content_type_json_header() -> axum::http::HeaderMap {
     );
     return headers;
 }
-
+#[instrument]
 pub async fn json_request_wrapper<T>(
     client: &reqwest::Client,
     method: reqwest::Method,
-    tracer: &'static opentelemetry::global::BoxedTracer,
     url: &str,
     headers: Option<HeaderMap>,
     body: Option<String>,
@@ -64,20 +64,17 @@ pub async fn json_request_wrapper<T>(
 where
     T: DeserializeOwned,
 {
-    let mut span = tracer
-        .span_builder("request")
-        .with_kind(SpanKind::Internal)
-        .start(tracer);
-    span.set_attribute(KeyValue::new("request.url", url.to_string()));
+    let cx  = Span::current().context();
+     let otel_span = cx.span(); // op
     let mut builder = client.request(method.clone(), url);
 
     if let Some(h) = headers {
-        span.set_attribute(KeyValue::new("request.header", format!("{:?}", h)));
+        otel_span.set_attribute(KeyValue::new("request.header", format!("{:?}", h)));
         builder = builder.headers(h);
     }
 
     if let Some(b) = &body {
-        span.set_attribute(KeyValue::new("request.body", format!("{:?}", b)));
+        otel_span.set_attribute(KeyValue::new("request.body", format!("{:?}", b)));
         builder = builder.body(b.clone());
     }
 
@@ -99,7 +96,7 @@ where
         return custom_error;
     })?;
     let status = response.status();
-    span.set_attribute(KeyValue::new("response.status", status.to_string()));
+    otel_span.set_attribute(KeyValue::new("response.status", status.to_string()));
     let text = response.text().await.map_err(|error| {
         let custom_error = CustomError::HTTP(format!(
             "http response to string error: {}",
@@ -108,7 +105,7 @@ where
         macro_log_error!(custom_error);
         return custom_error;
     })?;
-    span.set_attribute(KeyValue::new("response.body", text.clone()));
+    otel_span.set_attribute(KeyValue::new("response.body", text.clone()));
     if status.as_u16() >= 300 {
         let custom_error = CustomError::HTTP(format!(
             "http request error: {},{}",

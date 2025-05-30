@@ -35,7 +35,7 @@ pub async fn article_page(
     let from = (page - 1) * page_size;
     let analyze = params.analyze;
     let response =
-        service::article_service::page(state.reqwest_client, None, from, page_size, analyze).await;
+        service::article_service::article_service_page(state.reqwest_client, None, from, page_size, analyze).await;
 
     return axum_response(response, content_type_json_header());
 }
@@ -62,7 +62,7 @@ pub async fn add_article(
         title: params.title,
         content: params.content,
     };
-    let response = service::article_service::add(state.reqwest_client, dto).await;
+    let response = service::article_service::article_service_add(state.reqwest_client, dto).await;
 
     return axum_response(response, content_type_json_header());
 }
@@ -78,7 +78,7 @@ pub async fn get_article(
         .with_kind(SpanKind::Internal)
         .start(tracer);
 
-    let response = service::article_service::get(state.reqwest_client, &id).await;
+    let response = service::article_service::article_service_get(state.reqwest_client, &id).await;
 
     return axum_response(response, content_type_json_header());
 }

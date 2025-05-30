@@ -1,12 +1,13 @@
 use chrono::Utc;
-use opentelemetry::trace::{Span, SpanKind, Tracer};
 use serde_json::json;
 use server_common::{constant::{ESAnalyzeSearchResult, ESDetail, ESHitsAnalyze, ESInsertOrUpdateResponse}, error::CustomError, fetch::json_request_wrapper};
+use tracing::instrument;
 
 use crate::{
-    dto::add_article_dto::AddArticleDTO, env::Environment, middleware::log::get_tracer, model::article_model::{ESAnalyzeArticleHighlight, ESArticleEntry}
+    dto::add_article_dto::AddArticleDTO, env::Environment, model::article_model::{ESAnalyzeArticleHighlight, ESArticleEntry}
 };
 
+#[instrument]
 pub async fn page(
     reqwest_client: reqwest::Client,
     sort: Option<&str>,
@@ -14,11 +15,6 @@ pub async fn page(
     size: u32,
     analyze: Option<String>,
 ) -> Result<ESHitsAnalyze<ESArticleEntry, ESAnalyzeArticleHighlight>, CustomError> {
-    let tracer = get_tracer();
-    let mut span = tracer
-        .span_builder(" article page repository")
-        .with_kind(SpanKind::Internal)
-        .start(tracer);
     let create_time_sort = sort.unwrap_or("desc");
     let analyze_keyword = analyze.unwrap_or("".to_string());
     let document;
@@ -74,12 +70,10 @@ pub async fn page(
         })
         .to_string();
     }
-    span.add_event("search article page es", vec![]);
     let json =
         json_request_wrapper::<ESAnalyzeSearchResult<ESArticleEntry, ESAnalyzeArticleHighlight>>(
             &reqwest_client,
             reqwest::Method::GET,
-            tracer,
             &format!(
                 "{}/{}/_search",
                 Environment::get_elasticsearch_api(),
@@ -89,18 +83,12 @@ pub async fn page(
             Some(document.clone()),
         )
         .await?;
-    span.add_event("search article page es finish", vec![]);
     return Ok(json.hits);
 }
 
 
-
+#[instrument]
 pub async fn add(reqwest_client: reqwest::Client, data: AddArticleDTO) -> Result<String, CustomError> {
-    let tracer = get_tracer();
-    let mut span = tracer
-        .span_builder("add article repository")
-        .with_kind(SpanKind::Internal)
-        .start(tracer);
     let current_timestamp_millis = Utc::now().timestamp_millis();
     let add_item = ESArticleEntry {
         title: data.title,
@@ -109,14 +97,11 @@ pub async fn add(reqwest_client: reqwest::Client, data: AddArticleDTO) -> Result
         account: data.account,
         update_time: current_timestamp_millis,
     };
-    span.add_event("params to json string ", vec![]);
+
     let document = json!(add_item).to_string();
-    span.add_event("params to json string end ", vec![]);
-    span.add_event("params insert es ", vec![]);
     let json = json_request_wrapper::<ESInsertOrUpdateResponse>(
         &reqwest_client,
         reqwest::Method::POST,
-        tracer,
         &format!(
             "{}/{}/_doc?refresh=wait_for",
             Environment::get_elasticsearch_api(),
@@ -126,27 +111,17 @@ pub async fn add(reqwest_client: reqwest::Client, data: AddArticleDTO) -> Result
         Some(document.clone()),
     )
     .await?;
-    span.add_event("params insert es end", vec![]);
-   
     return Ok(json._id);
 }
 
-
-// get by id
+#[instrument]
 pub async fn get(
     reqwest_client: reqwest::Client,
     id: &str,
 ) -> Result<ESDetail<ESArticleEntry>, CustomError> {
-    let tracer = get_tracer();
-    let mut span = tracer
-        .span_builder("get article by id repository")
-        .with_kind(SpanKind::Internal)
-        .start(tracer);
-    span.add_event("get article by id", vec![]);
     let json = json_request_wrapper::<ESDetail<ESArticleEntry>>(
         &reqwest_client,
         reqwest::Method::GET,
-        tracer,
         &format!(
             "{}/{}/_doc/{}",
             Environment::get_elasticsearch_api(),
@@ -157,6 +132,5 @@ pub async fn get(
         None,
     )
     .await?;
-    span.add_event("get article by id end", vec![]);
     return Ok(json);
 }

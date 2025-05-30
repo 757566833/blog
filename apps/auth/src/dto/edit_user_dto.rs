@@ -1,4 +1,5 @@
 
+#[derive(Debug)]
 pub struct EditUserDto {
     pub account_id : String,
     pub nickname: String,

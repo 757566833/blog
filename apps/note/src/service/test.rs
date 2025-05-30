@@ -1,21 +1,13 @@
-use opentelemetry::trace::{Span, SpanKind, Tracer};
 use server_common::{
     error::{CustomError},
 };
+use tracing::instrument;
 
 use crate::{
-    middleware::log::get_tracer,
     dao,
 };
+#[instrument]
 pub async fn get(reqwest_client: reqwest::Client, query: String) -> Result<String, CustomError> {
-    let tracer = get_tracer();
-    let mut span = tracer
-        .span_builder("get test service")
-        .with_kind(SpanKind::Internal)
-        .start(tracer);
-
-    span.add_event("get time", vec![]);
     let result = dao::test::get(reqwest_client, query).await;
-    span.add_event("get time end", vec![]);
     return result;
 }

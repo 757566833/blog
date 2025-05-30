@@ -1,8 +1,9 @@
 use crate::{dto::{add_user_dto::AddUserDto, edit_user_dto::EditUserDto}, model::user_entry::UserEntry};
 use server_common::{error::CustomError, macro_log_error};
 use sqlx::{Executor, Postgres, postgres::PgPool};
+use tracing::instrument;
 
-// 根据add_user_dto 生成对应的用户添加方法
+#[instrument]
 pub async fn add_user<'e, E>(executor: E, user: AddUserDto) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
@@ -31,7 +32,7 @@ where
     return Ok(result.rows_affected());
 }
 
-// 生成与上述对应，修改用户的相关方法 参数是EditUserDto
+#[instrument]
 pub async fn update_user<'e, E>(executor: E, user: EditUserDto) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
@@ -60,7 +61,7 @@ where
     return Ok(result.rows_affected());
 }
 
-// get user by account
+#[instrument]
 pub async fn get_user_by_account(
     pool: &PgPool,
     account: &str,

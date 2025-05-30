@@ -1,5 +1,6 @@
 use server_common::{error::CustomError, macro_log_error};
 use sqlx::{Executor, Postgres};
+use tracing::instrument;
 
 use crate::{
     dto::{
@@ -8,7 +9,7 @@ use crate::{
     },
     model::account_entry::AccountEntry,
 };
-
+#[instrument]
 pub async fn add_account<'e, E>(executor: E, account: AddAccountDto) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
@@ -37,7 +38,7 @@ where
     return Ok(result.rows_affected());
 }
 
-// 生成与上述对应，修改account 的方法
+#[instrument]
 pub async fn update_account<'e, E>(executor: E, account: EditAccountDto) -> Result<u64, CustomError>
 where
     E: Executor<'e, Database = Postgres>,
@@ -65,7 +66,7 @@ where
     })?;
     return Ok(result.rows_affected());
 }
-// 生成与上述对应，查询account 的方法 根据 get_account_dto 的 account 和 password_hash 查询， 存在就返回id 没有就是空字符串
+#[instrument]
 pub async fn get_account(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: GetAccountDto,
@@ -101,7 +102,7 @@ pub async fn get_account(
     return Ok(id);
 }
 
-// get account count by account
+#[instrument]
 pub async fn get_account_count(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: &str,
@@ -128,7 +129,7 @@ pub async fn get_account_count(
     return Ok(result);
 }
 
-// get account by account
+#[instrument]
 pub async fn get_account_by_account(
     pool: &sqlx::Pool<sqlx::Postgres>,
     account: &str,
